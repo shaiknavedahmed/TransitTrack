@@ -29,10 +29,15 @@ export const DriverCockpit: React.FC = () => {
     currentUser,
     routes,
     vehicles,
+    schedules,
     updateDriverStatus,
     updateVehicle,
     reportDelay,
-    logAction
+    logAction,
+    startTrip,
+    pauseTrip,
+    resumeTrip,
+    completeTrip
   } = useTransit();
 
   // Find vehicle assigned to driver or default to first in-service vehicle
@@ -43,10 +48,21 @@ export const DriverCockpit: React.FC = () => {
 
   const assignedRoute = routes.find(r => r.id === driverVehicle?.assignedRouteId) || routes[0];
 
-  const [tripState, setTripState] = useState<'In Progress' | 'Paused' | 'Completed'>('In Progress');
+  // Derive driver trip status from vehicle status & simulation
+  const isTripActive = driverVehicle?.status === 'In Service' && driverVehicle?.isSimulating;
+  const isPaused = driverVehicle?.status === 'Idle / Depot' || (!driverVehicle?.isSimulating && driverVehicle?.status === 'In Service');
+  const isOffDuty = driverVehicle?.status === 'Off Duty';
+  const isInMaintenance = driverVehicle?.status === 'Maintenance';
+
   const [speed, setSpeed] = useState<number>(driverVehicle?.speedKmH || 35);
   const [occupancy, setOccupancy] = useState<OccupancyLevel>(driverVehicle?.occupancy || 'Moderate');
   const [delayMinutes, setDelayMinutes] = useState<number>(driverVehicle?.delayMinutes || 0);
+
+  // Assigned schedule runs for this route/vehicle
+  const assignedSchedules = schedules.filter(
+    s => s.routeId === assignedRoute?.id || s.vehicleId === driverVehicle?.regNumber
+  );
+  const currentTripSchedule = assignedSchedules.find(s => s.status !== 'Completed') || assignedSchedules[0];
 
   // Delay modal state
   const [delayModalOpen, setDelayModalOpen] = useState(false);
@@ -145,28 +161,70 @@ export const DriverCockpit: React.FC = () => {
         </div>
 
         {/* Trip Controls */}
-        <div className="flex items-center gap-2 self-start md:self-auto">
-          {tripState === 'In Progress' ? (
-            <button
-              onClick={() => {
-                setTripState('Paused');
-                showNotice('Trip marked as Paused at layover.');
-              }}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-            >
-              <Pause className="w-3.5 h-3.5" />
-              <span>Pause Shift / Layover</span>
-            </button>
+        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+          {isInMaintenance ? (
+            <div className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-rose-700 border border-rose-200 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
+              <span>Unit in Maintenance Depot</span>
+            </div>
+          ) : isTripActive ? (
+            <>
+              <button
+                onClick={() => {
+                  pauseTrip(driverVehicle.id);
+                  showNotice('Trip paused at station layover. Vehicle GPS transmission set to stationary.');
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                <Pause className="w-3.5 h-3.5" />
+                <span>Pause Layover</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  completeTrip(driverVehicle.id, currentTripSchedule?.tripId);
+                  showNotice('Trip marked as Completed! Vehicle status updated to Off Duty.');
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                <StopCircle className="w-3.5 h-3.5 text-rose-400" />
+                <span>End Shift / Complete Trip</span>
+              </button>
+            </>
+          ) : isPaused ? (
+            <>
+              <button
+                onClick={() => {
+                  resumeTrip(driverVehicle.id);
+                  showNotice('Trip resumed! Vehicle GPS simulation transmitting.');
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                <Play className="w-3.5 h-3.5" />
+                <span>Resume Transit</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  completeTrip(driverVehicle.id, currentTripSchedule?.tripId);
+                  showNotice('Shift ended. Vehicle status marked Off Duty.');
+                }}
+                className="px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                <StopCircle className="w-3.5 h-3.5" />
+                <span>End Shift</span>
+              </button>
+            </>
           ) : (
             <button
               onClick={() => {
-                setTripState('In Progress');
-                showNotice('Shift Trip Resumed.');
+                startTrip(driverVehicle.id, currentTripSchedule?.tripId);
+                showNotice('Shift trip started! Vehicle GPS actively transmitting coordinates.');
               }}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
             >
-              <Play className="w-3.5 h-3.5" />
-              <span>Resume Trip</span>
+              <Play className="w-4 h-4" />
+              <span>Start Scheduled Trip</span>
             </button>
           )}
 
@@ -203,10 +261,18 @@ export const DriverCockpit: React.FC = () => {
                 <span className="text-[10px] font-mono tracking-widest text-transit-400 uppercase font-bold">
                   Assigned Transit Unit
                 </span>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <h2 className="text-2xl font-extrabold text-white font-mono">{driverVehicle.regNumber}</h2>
                   <span className="px-2 py-0.5 rounded-md bg-transit-600/30 text-transit-300 border border-transit-500/30 text-xs font-bold">
                     {driverVehicle.mode}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                    driverVehicle.status === 'In Service' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                    driverVehicle.status === 'Delayed' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                    driverVehicle.status === 'Maintenance' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
+                    'bg-slate-700 text-slate-300 border border-slate-600'
+                  }`}>
+                    {driverVehicle.status} &bull; {driverVehicle.isSimulating ? 'GPS Moving' : 'Stationary'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">{driverVehicle.model}</p>
@@ -405,15 +471,15 @@ export const DriverCockpit: React.FC = () => {
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Driver Badge ID:</span>
-                <strong className="text-slate-900 font-mono">{currentUser.badgeNumber || 'DRV-1099'}</strong>
+                <strong className="text-slate-900 font-mono">{currentUser.badgeNumber || 'TG-DRV-1089'}</strong>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Operating Fleet Carrier:</span>
-                <span className="text-slate-700">{currentUser.operatorCompany || 'CityLink Transit Fleet'}</span>
+                <span>Operating Depot:</span>
+                <span className="text-slate-700">{currentUser.depot || 'TGSRTC Warangal Depot-1'}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Shift Hours:</span>
-                <strong className="text-slate-900">06:00 AM - 02:30 PM</strong>
+                <strong className="text-slate-900">06:00 AM - 02:30 PM (IST)</strong>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Distance Driven Today:</span>
@@ -421,6 +487,41 @@ export const DriverCockpit: React.FC = () => {
                   {driverVehicle.totalDistanceTodayKm.toFixed(1)} km
                 </strong>
               </div>
+            </div>
+          </div>
+
+          {/* Scheduled Trips for Today */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-3">
+            <h3 className="font-bold text-slate-900 text-sm flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-600" />
+                Assigned Route Schedule Runs
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">Today (IST)</span>
+            </h3>
+
+            <div className="space-y-2 text-xs border-t border-slate-100 pt-3">
+              {assignedSchedules.length > 0 ? (
+                assignedSchedules.slice(0, 4).map(sch => (
+                  <div key={sch.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                    <div>
+                      <div className="font-mono font-bold text-slate-900 text-[11px]">{sch.tripId}</div>
+                      <div className="text-[10px] text-slate-500">{sch.departureTime} &rarr; {sch.arrivalTime}</div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      sch.status === 'Completed' ? 'bg-slate-200 text-slate-700' :
+                      sch.status === 'Delayed' ? 'bg-amber-100 text-amber-700' :
+                      'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {sch.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-slate-400 italic text-[11px] py-1 text-center">
+                  All day corridor shuttle rotation
+                </div>
+              )}
             </div>
           </div>
 
@@ -469,10 +570,10 @@ export const DriverCockpit: React.FC = () => {
             <label className="block text-xs font-bold text-slate-700 mb-1">Quick Presets</label>
             <div className="flex flex-wrap gap-1.5">
               {[
-                { mins: 5, label: '+5m Downtown Gridlock' },
-                { mins: 10, label: '+10m Roadwork Detour' },
-                { mins: 15, label: '+15m Vehicle Check' },
-                { mins: 25, label: '+25m Severe Breakdown' }
+                { mins: 5, label: '+5m MGM Chowrasta Traffic' },
+                { mins: 10, label: '+10m Kazipet Gate Delay' },
+                { mins: 15, label: '+15m NH-163 Roadwork' },
+                { mins: 25, label: '+25m Mechanical Check' }
               ].map(preset => (
                 <button
                   type="button"

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TransitProvider, useTransit } from './context/TransitContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { AlertBanner } from './components/layout/AlertBanner';
+import { UserRole } from './types';
+import { ROLE_DEFAULT_SCREEN, ROLE_ALLOWED_SCREENS } from './utils/roleConfig';
 
 // Screens
 import { LiveMapScreen } from './screens/LiveMapScreen';
@@ -15,29 +17,69 @@ import { DriverCockpit } from './screens/DriverCockpit';
 import { ReportsScreen } from './screens/ReportsScreen';
 
 const MainApp: React.FC = () => {
-  const [activeScreen, setActiveScreen] = useState<string>('live-map');
-  const { currentUser } = useTransit();
+  const { currentUser, isAuthenticated } = useTransit();
+  const [activeScreen, setActiveScreen] = useState<string>(() => ROLE_DEFAULT_SCREEN[currentUser?.role || 'Passenger'] || 'live-map');
+  const [reportsInitialTab, setReportsInitialTab] = useState<'schedule' | 'vehicle' | 'feedback' | 'delay'>('schedule');
+  const prevRoleRef = useRef<UserRole>(currentUser?.role || 'Passenger');
+
+  // Automatically switch active screen whenever currentUser.role changes
+  useEffect(() => {
+    if (currentUser?.role && prevRoleRef.current !== currentUser.role) {
+      prevRoleRef.current = currentUser.role;
+      setActiveScreen(ROLE_DEFAULT_SCREEN[currentUser.role] || 'live-map');
+    }
+  }, [currentUser?.role]);
+
+  // Route guard: if active screen is not allowed for the active role, redirect to role's default dashboard
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.role) {
+      const allowed = ROLE_ALLOWED_SCREENS[currentUser.role] || ['live-map'];
+      if (!allowed.includes(activeScreen)) {
+        setActiveScreen(ROLE_DEFAULT_SCREEN[currentUser.role] || 'live-map');
+      }
+    }
+  }, [activeScreen, currentUser?.role, isAuthenticated]);
+
+  const handleOpenReport = (tab: 'schedule' | 'vehicle' | 'feedback' | 'delay' = 'schedule') => {
+    setReportsInitialTab(tab);
+    setActiveScreen('reports');
+  };
+
+  // If user is not authenticated, show the Login screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+        <AuthScreen onNavigateToScreen={(screen) => setActiveScreen(screen)} />
+        <Footer />
+      </div>
+    );
+  }
 
   const renderScreen = () => {
     switch (activeScreen) {
-      case 'live-map':
-        return <LiveMapScreen />;
-      case 'routes':
-        return <TimetableScreen />;
-      case 'feedback':
-        return <FeedbackScreen />;
-      case 'auth':
-        return <AuthScreen onNavigateToScreen={screen => setActiveScreen(screen)} />;
       case 'admin':
-        return <AdminDashboard onNavigateToReports={() => setActiveScreen('reports')} />;
+        return (
+          <AdminDashboard
+            onNavigateToReports={handleOpenReport}
+            onNavigateToScreen={screen => setActiveScreen(screen)}
+          />
+        );
       case 'operator':
         return <OperatorScreen />;
       case 'driver':
         return <DriverCockpit />;
+      case 'live-map':
+        return <LiveMapScreen onNavigateToScreen={screen => setActiveScreen(screen)} />;
+      case 'routes':
+        return <TimetableScreen />;
+      case 'feedback':
+        return <FeedbackScreen />;
       case 'reports':
-        return <ReportsScreen />;
+        return <ReportsScreen initialTab={reportsInitialTab} />;
+      case 'auth':
+        return <AuthScreen onNavigateToScreen={screen => setActiveScreen(screen)} />;
       default:
-        return <LiveMapScreen />;
+        return <LiveMapScreen onNavigateToScreen={screen => setActiveScreen(screen)} />;
     }
   };
 

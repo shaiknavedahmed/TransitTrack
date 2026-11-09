@@ -417,10 +417,10 @@ export const FeedbackScreen: React.FC = () => {
 
                   {/* Official Transit Reply if any */}
                   {fb.adminResponse && (
-                    <div className="ml-4 pl-3 border-l-2 border-transit-500 text-xs bg-transit-50/60 p-2.5 rounded-r-xl">
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-transit-800 mb-0.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-transit-600" />
-                        <span>Metro Transit Operations Authority Response</span>
+                    <div className="ml-4 pl-3 border-l-2 border-emerald-600 text-xs bg-emerald-50/60 p-2.5 rounded-r-lg">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-900 mb-0.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>TGSRTC Warangal Regional Operations Authority Response</span>
                       </div>
                       <p className="text-slate-700 text-[11px]">{fb.adminResponse}</p>
                     </div>
@@ -443,7 +443,7 @@ export const FeedbackScreen: React.FC = () => {
                             setReplyText({ ...replyText, [fb.id]: '' });
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-transit-600 text-white text-xs font-bold hover:bg-transit-700 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-[#0d6e52] text-white text-xs font-bold hover:bg-emerald-800 cursor-pointer"
                       >
                         Reply
                       </button>

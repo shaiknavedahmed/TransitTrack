@@ -60,3 +60,4 @@ export function printSection(sectionId: string, title: string) {
   `);
   printWindow.document.close();
 }
+

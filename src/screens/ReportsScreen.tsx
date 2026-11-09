@@ -22,12 +22,16 @@ import {
   FileCheck
 } from 'lucide-react';
 
-export const ReportsScreen: React.FC = () => {
+interface ReportsScreenProps {
+  initialTab?: 'schedule' | 'vehicle' | 'feedback' | 'delay';
+}
+
+export const ReportsScreen: React.FC<ReportsScreenProps> = ({ initialTab = 'schedule' }) => {
   const { schedules, vehicles, feedbacks, delays, routes } = useTransit();
 
   const [activeReportTab, setActiveReportTab] = useState<
     'schedule' | 'vehicle' | 'feedback' | 'delay'
-  >('schedule');
+  >(initialTab);
 
   // Filters
   const [routeFilter, setRouteFilter] = useState<string>('All');
@@ -64,7 +68,7 @@ export const ReportsScreen: React.FC = () => {
       s.status,
       `${s.onTimeRate}%`
     ]);
-    exportToCSV('MetroTransit_RouteWise_Schedule_Report', headers, rows);
+    exportToCSV('TGSRTC_RouteWise_Schedule_Report', headers, rows);
   };
 
   const handleExportVehicleActivityReport = () => {
@@ -95,7 +99,7 @@ export const ReportsScreen: React.FC = () => {
         v.status
       ];
     });
-    exportToCSV('MetroTransit_Vehicle_Activity_Report', headers, rows);
+    exportToCSV('TGSRTC_Vehicle_Activity_Report', headers, rows);
   };
 
   const handleExportFeedbackReport = () => {
@@ -123,7 +127,7 @@ export const ReportsScreen: React.FC = () => {
       f.status,
       f.timestamp
     ]);
-    exportToCSV('MetroTransit_Passenger_Feedback_Report', headers, rows);
+    exportToCSV('TGSRTC_Passenger_Feedback_Report', headers, rows);
   };
 
   const handleExportDelayReport = () => {
@@ -151,7 +155,7 @@ export const ReportsScreen: React.FC = () => {
       d.actionTaken,
       d.reportedAt
     ]);
-    exportToCSV('MetroTransit_Service_Delay_Report', headers, rows);
+    exportToCSV('TGSRTC_Service_Delay_Report', headers, rows);
   };
 
   return (

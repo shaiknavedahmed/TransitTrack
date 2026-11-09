@@ -5,7 +5,7 @@ import { exportToCSV, printSection } from '../utils/exportUtils';
 import {
   Calendar,
   Clock,
-  DollarSign,
+  IndianRupee,
   MapPin,
   Download,
   Printer,
@@ -27,9 +27,10 @@ export const TimetableScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [modeFilter, setModeFilter] = useState<string>('All');
 
-  const selectedRoute = routes.find(r => r.id === selectedRouteId) || routes[0];
+  const isPassenger = currentUser.role === 'Passenger';
+  const displayRoutes = isPassenger ? routes.filter(r => r.isPublished) : routes;
 
-  const filteredRoutes = routes.filter(r => {
+  const filteredRoutes = displayRoutes.filter(r => {
     const matchesQuery =
       r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -37,6 +38,8 @@ export const TimetableScreen: React.FC = () => {
     const matchesMode = modeFilter === 'All' || r.mode === modeFilter;
     return matchesQuery && matchesMode;
   });
+
+  const selectedRoute = filteredRoutes.find(r => r.id === selectedRouteId) || filteredRoutes[0] || routes[0];
 
   // Generate timetable departure slots based on operating hours and frequency
   const generateDepartureTimes = (route: TransitRoute) => {
@@ -88,7 +91,7 @@ export const TimetableScreen: React.FC = () => {
       trip.type
     ]);
 
-    exportToCSV(`MetroTransit_Timetable_Route_${selectedRoute.code}`, headers, rows);
+    exportToCSV(`TGSRTC_Timetable_Route_${selectedRoute.code}`, headers, rows);
   };
 
   const canManageRoutes = currentUser.role === 'Admin' || currentUser.role === 'Transport Operator';
@@ -97,32 +100,32 @@ export const TimetableScreen: React.FC = () => {
     <div className="space-y-6">
       
       {/* Screen Title & Quick Actions */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-lg p-5 border border-slate-300 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              Route Directory &amp; Timetable Information
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Telangana Route Directory &amp; Timetable Information
             </h1>
-            <Badge variant="blue">Official Schedule</Badge>
+            <Badge variant="blue">TGSRTC Official Schedule</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Browse published route corridors, stop-by-stop sequencing, fare rules, and daily departures timetable.
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Browse published bus corridors across Warangal, Hanamkonda, Kazipet, Hyderabad, Karimnagar, intermediate stops, fare stages (₹), and departures (IST).
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+            className="px-3.5 py-2 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-transit-600" />
+            <Download className="w-3.5 h-3.5 text-[#0d6e52]" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => printSection('printable-timetable', `Route ${selectedRoute?.code} Timetable`)}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+            className="px-3.5 py-2 rounded-lg text-xs font-bold bg-[#0c1a2e] hover:bg-slate-800 text-white flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5 text-transit-400" />
+            <Printer className="w-3.5 h-3.5 text-emerald-400" />
             <span>Print Timetable</span>
           </button>
         </div>
@@ -210,9 +213,9 @@ export const TimetableScreen: React.FC = () => {
                         <Clock className="w-3 h-3 text-slate-400" />
                         Every {route.frequencyMinutes}m
                       </span>
-                      <span className="flex items-center gap-1 font-semibold text-slate-700">
-                        <DollarSign className="w-3 h-3 text-slate-400" />
-                        ${route.fare.toFixed(2)}
+                      <span className="flex items-center gap-0.5 font-semibold text-slate-800">
+                        <IndianRupee className="w-3 h-3 text-emerald-700" />
+                        {route.fare.toFixed(0)}
                       </span>
                       {route.isPublished ? (
                         <span className="text-emerald-600 font-semibold flex items-center gap-0.5">
@@ -304,9 +307,9 @@ export const TimetableScreen: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold text-slate-400">Headway Frequency</span>
                   <div className="text-base font-bold text-slate-800">Every {selectedRoute.frequencyMinutes} mins</div>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Standard Single Fare</span>
-                  <div className="text-base font-bold text-emerald-600">${selectedRoute.fare.toFixed(2)}</div>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] uppercase font-bold text-slate-500">Standard Single Fare</span>
+                  <div className="text-base font-bold text-emerald-700">₹{selectedRoute.fare.toFixed(0)}</div>
                 </div>
               </div>
 

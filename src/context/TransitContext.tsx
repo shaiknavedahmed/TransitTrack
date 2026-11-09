@@ -9,7 +9,8 @@ import {
   PassengerFeedback,
   ServiceDelay,
   SystemAuditLog,
-  GeoPoint
+  GeoPoint,
+  VehicleStatus
 } from '../types';
 import {
   INITIAL_USERS,
@@ -25,8 +26,12 @@ import { calculateBearing, interpolateGeoPoint } from '../utils/geoUtils';
 
 interface TransitContextType {
   currentUser: User;
+  isAuthenticated: boolean;
+  login: (usernameOrEmail: string, password: string) => { success: boolean; message?: string };
+  logout: () => void;
   switchRole: (role: UserRole) => void;
   users: User[];
+  addUser: (user: User) => void;
   
   routes: TransitRoute[];
   stops: TransitStop[];
@@ -47,20 +52,35 @@ interface TransitContextType {
   simulationSpeed: number;
   setSimulationSpeed: (speed: number) => void;
 
-  // Management actions
+  // Route & Stop Management
   addRoute: (route: Omit<TransitRoute, 'id'>) => void;
   updateRoute: (route: TransitRoute) => void;
   togglePublishRoute: (routeId: string) => void;
-  
   addStop: (stop: Omit<TransitStop, 'id'>) => void;
   updateStop: (stop: TransitStop) => void;
   
+  // Fleet & Dispatch Management
   updateVehicle: (vehicle: TransitVehicle) => void;
+  assignVehicle: (vehicleId: string, routeId: string | null, driverId: string | null) => { success: boolean; message?: string };
+  setVehicleMaintenance: (vehicleId: string, inMaintenance: boolean) => void;
   updateDriverStatus: (vehicleId: string, speed: number, delayMinutes: number, occupancy: TransitVehicle['occupancy']) => void;
   
+  // Driver Trip Controls
+  startTrip: (vehicleId: string, tripId?: string) => void;
+  pauseTrip: (vehicleId: string) => void;
+  resumeTrip: (vehicleId: string) => void;
+  completeTrip: (vehicleId: string, tripId?: string) => void;
+
+  // Timetable Scheduling
+  addSchedule: (item: Omit<RouteScheduleItem, 'id'>) => void;
+  updateSchedule: (item: RouteScheduleItem) => void;
+  deleteSchedule: (id: string) => void;
+  
+  // Feedback
   submitFeedback: (feedback: Omit<PassengerFeedback, 'id' | 'timestamp' | 'status' | 'sentiment'>) => void;
   respondToFeedback: (id: string, response: string) => void;
   
+  // Delay & Incident Alerts
   reportDelay: (delay: Omit<ServiceDelay, 'id' | 'reportedAt' | 'status'>) => void;
   resolveDelay: (id: string, actionNote: string) => void;
 
@@ -71,20 +91,52 @@ interface TransitContextType {
 const TransitContext = createContext<TransitContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  USER: 'metro_current_user_v1',
-  ROUTES: 'metro_routes_v1',
-  STOPS: 'metro_stops_v1',
-  VEHICLES: 'metro_vehicles_v1',
-  SCHEDULES: 'metro_schedules_v1',
-  FEEDBACK: 'metro_feedback_v1',
-  DELAYS: 'metro_delays_v1',
-  LOGS: 'metro_audit_logs_v1'
+  AUTH: 'tgsrtc_warangal_telangana_v12_auth',
+  USER: 'tgsrtc_warangal_telangana_v12_user',
+  USERS_LIST: 'tgsrtc_warangal_telangana_v12_users_list',
+  ROUTES: 'tgsrtc_warangal_telangana_v12_routes',
+  STOPS: 'tgsrtc_warangal_telangana_v12_stops',
+  VEHICLES: 'tgsrtc_warangal_telangana_v12_vehicles',
+  SCHEDULES: 'tgsrtc_warangal_telangana_v12_schedules',
+  FEEDBACK: 'tgsrtc_warangal_telangana_v12_feedback',
+  DELAYS: 'tgsrtc_warangal_telangana_v12_delays',
+  LOGS: 'tgsrtc_warangal_telangana_v12_logs'
 };
 
 function loadStorage<T>(key: string, fallback: T): T {
   try {
+    if (typeof window !== 'undefined') {
+      // Purge old versions
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('metro_') || (k.startsWith('tgsrtc_') && !k.startsWith('tgsrtc_warangal_telangana_v12_')))) {
+          try { localStorage.removeItem(k); } catch (e) {}
+        }
+      }
+    }
+
     const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : fallback;
+    if (!saved) return fallback;
+
+    const parsed = JSON.parse(saved);
+
+    // Geographic and integrity validation
+    if (Array.isArray(parsed)) {
+      if (parsed.some((item: any) => item?.location && (item.location.lng < 75 || item.location.lng > 83 || item.location.lat < 15 || item.location.lat > 22))) {
+        localStorage.removeItem(key);
+        return fallback;
+      }
+      if (parsed.some((item: any) => item?.currentLocation && (item.currentLocation.lng < 75 || item.currentLocation.lng > 83 || item.currentLocation.lat < 15 || item.currentLocation.lat > 22))) {
+        localStorage.removeItem(key);
+        return fallback;
+      }
+      if (parsed.some((item: any) => item?.regNumber && item.regNumber.startsWith('BUS-'))) {
+        localStorage.removeItem(key);
+        return fallback;
+      }
+    }
+
+    return parsed;
   } catch (e) {
     console.error('Storage read error', e);
     return fallback;
@@ -92,10 +144,17 @@ function loadStorage<T>(key: string, fallback: T): T {
 }
 
 export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
+    loadStorage<boolean>(STORAGE_KEYS.AUTH, false)
+  );
+
   const [currentUser, setCurrentUser] = useState<User>(() =>
     loadStorage<User>(STORAGE_KEYS.USER, INITIAL_USERS[0])
   );
-  const [users] = useState<User[]>(INITIAL_USERS);
+
+  const [users, setUsers] = useState<User[]>(() =>
+    loadStorage<User[]>(STORAGE_KEYS.USERS_LIST, INITIAL_USERS)
+  );
 
   const [routes, setRoutes] = useState<TransitRoute[]>(() =>
     loadStorage<TransitRoute[]>(STORAGE_KEYS.ROUTES, INITIAL_ROUTES)
@@ -125,10 +184,18 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(true);
   const [simulationSpeed, setSimulationSpeed] = useState<number>(1);
 
-  // Sync to local storage
+  // Sync state to local storage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(isAuthenticated));
+  }, [isAuthenticated]);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.USERS_LIST, JSON.stringify(users));
+  }, [users]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(routes));
@@ -161,9 +228,9 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const logAction = (action: string, details: string) => {
     const newLog: SystemAuditLog = {
       id: `log-${Date.now()}`,
-      timestamp: 'Just now',
-      actor: currentUser.name,
-      role: currentUser.role,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      actor: currentUser?.name || 'System',
+      role: currentUser?.role || 'Passenger',
       action,
       details,
       ipAddress: '127.0.0.1'
@@ -171,20 +238,53 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setAuditLogs(prev => [newLog, ...prev.slice(0, 49)]);
   };
 
+  // AUTHENTICATION LOGIC
+  const login = (usernameOrEmail: string, password: string): { success: boolean; message?: string } => {
+    const input = usernameOrEmail.trim().toLowerCase();
+    const userMatch = users.find(u => {
+      const matchEmail = u.email.toLowerCase() === input;
+      const matchUsername = u.username ? u.username.toLowerCase() === input : false;
+      const matchRole = u.role.toLowerCase() === input || u.role.toLowerCase().replace(/\s+/g, '') === input;
+      return (matchEmail || matchUsername || matchRole) && (u.password ? u.password === password : password === 'admin123' || password === 'operator123' || password === 'driver123' || password === 'passenger123');
+    });
+
+    if (userMatch) {
+      setCurrentUser(userMatch);
+      setIsAuthenticated(true);
+      logAction('User Login', `Authenticated session established for ${userMatch.name} (${userMatch.role})`);
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      message: 'Invalid email/username or password. Please use demo credentials displayed below.'
+    };
+  };
+
+  const logout = () => {
+    logAction('User Logout', `User ${currentUser.name} signed out`);
+    setIsAuthenticated(false);
+  };
+
   const switchRole = (role: UserRole) => {
     const match = users.find(u => u.role === role) || {
       id: `usr-${role.toLowerCase().replace(/\s+/g, '-')}`,
       name: `${role} User`,
-      email: `${role.toLowerCase().replace(/\s+/g, '')}@metrotransit.org`,
+      email: `${role.toLowerCase().replace(/\s+/g, '')}@tgsrtc.gov.in`,
       role,
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80'
     };
     setCurrentUser(match);
+    setIsAuthenticated(true);
     logAction('Role Switch', `User switched session profile to ${role}`);
   };
 
+  const addUser = (newUser: User) => {
+    setUsers(prev => [...prev, newUser]);
+    logAction('Staff Onboarded', `Added ${newUser.role}: ${newUser.name} (${newUser.badgeNumber || 'N/A'})`);
+  };
+
   // GPS SIMULATION ENGINE
-  // Vehicles on active routes smoothly progress between waypoints
   const vehiclesRef = useRef(vehicles);
   vehiclesRef.current = vehicles;
   const routesRef = useRef(routes);
@@ -192,11 +292,12 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Waypoint progress index per vehicle: { [vehId]: progressFraction 0..1 }
   const vehicleProgressRef = useRef<{ [vehId: string]: { waypointIndex: number; fraction: number; direction: 1 | -1 } }>({
-    'veh-101A': { waypointIndex: 1, fraction: 0.2, direction: 1 },
+    'veh-101A': { waypointIndex: 2, fraction: 0.3, direction: 1 },
     'veh-101B': { waypointIndex: 4, fraction: 0.6, direction: 1 },
     'veh-204A': { waypointIndex: 2, fraction: 0.4, direction: 1 },
-    'veh-305A': { waypointIndex: 1, fraction: 0.7, direction: 1 },
-    'veh-408A': { waypointIndex: 3, fraction: 0.3, direction: 1 }
+    'veh-305A': { waypointIndex: 2, fraction: 0.5, direction: 1 },
+    'veh-408A': { waypointIndex: 3, fraction: 0.3, direction: 1 },
+    'veh-502A': { waypointIndex: 1, fraction: 0.4, direction: 1 }
   });
 
   useEffect(() => {
@@ -208,7 +309,13 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setVehicles(prevVehicles => {
         return prevVehicles.map(veh => {
-          if (!veh.isSimulating || !veh.assignedRouteId || veh.status !== 'In Service') {
+          // STRICT BUSINESS RULE:
+          // A vehicle only moves if:
+          // 1. isSimulating is true
+          // 2. assignedRouteId is valid
+          // 3. assignedDriverId is valid
+          // 4. status is 'In Service' (not Maintenance, not Idle / Depot, not Off Duty)
+          if (!veh.isSimulating || !veh.assignedRouteId || !veh.assignedDriverId || veh.status !== 'In Service') {
             return veh;
           }
 
@@ -228,7 +335,6 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
             fraction = 0;
             waypointIndex += direction;
             if (waypointIndex >= route.waypoints.length - 1) {
-              // Reverse direction or loop
               waypointIndex = route.waypoints.length - 2;
               direction = -1;
             }
@@ -248,9 +354,13 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const newPos: GeoPoint = interpolateGeoPoint(p1, p2, fraction);
           const heading = calculateBearing(p1, p2);
 
-          // Simulated speed variations
-          const baseSpeed = veh.mode === 'Express Shuttle' ? 65 : veh.mode === 'Tram' ? 40 : 32;
-          const currentSpeed = Math.max(15, Math.min(80, Math.round(baseSpeed + (Math.sin(Date.now() / 3000) * 10))));
+          const baseSpeed =
+            veh.mode === 'Super Luxury' || veh.mode === 'Deluxe'
+              ? 58
+              : veh.mode === 'Electric EV'
+              ? 42
+              : 30;
+          const currentSpeed = Math.max(12, Math.min(80, Math.round(baseSpeed + (Math.sin(Date.now() / 3000) * 8))));
 
           return {
             ...veh,
@@ -267,7 +377,7 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => clearInterval(interval);
   }, [isSimulationRunning, simulationSpeed]);
 
-  // Actions
+  // ROUTE & STOP ACTIONS
   const addRoute = (routeData: Omit<TransitRoute, 'id'>) => {
     const newRoute: TransitRoute = {
       ...routeData,
@@ -279,7 +389,7 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const updateRoute = (route: TransitRoute) => {
     setRoutes(prev => prev.map(r => (r.id === route.id ? route : r)));
-    logAction('Update Route', `Updated route configuration for ${route.code}`);
+    logAction('Update Route', `Updated route configuration for Line ${route.code} (${route.name})`);
   };
 
   const togglePublishRoute = (routeId: string) => {
@@ -289,7 +399,7 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const next = !r.isPublished;
           logAction(
             next ? 'Publish Route' : 'Unpublish Route',
-            `${next ? 'Published' : 'Unpublished'} timetable and live tracking for Route ${r.code}`
+            `${next ? 'Published' : 'Unpublished'} timetable and tracking for Line ${r.code}`
           );
           return { ...r, isPublished: next };
         }
@@ -312,9 +422,97 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logAction('Update Stop', `Modified transit stop: ${stop.name}`);
   };
 
+  // FLEET & VEHICLE MANAGEMENT
   const updateVehicle = (vehicle: TransitVehicle) => {
     setVehicles(prev => prev.map(v => (v.id === vehicle.id ? vehicle : v)));
     logAction('Fleet Update', `Modified vehicle attributes for ${vehicle.regNumber}`);
+  };
+
+  const assignVehicle = (
+    vehicleId: string,
+    routeId: string | null,
+    driverId: string | null
+  ): { success: boolean; message?: string } => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    if (!veh) return { success: false, message: 'Vehicle not found' };
+
+    // Validation: Maintenance vehicle cannot be assigned
+    if (veh.status === 'Maintenance') {
+      return {
+        success: false,
+        message: `Cannot dispatch ${veh.regNumber}. Vehicle is in Maintenance Depot.`
+      };
+    }
+
+    // Driver name lookup & conflict check
+    let driverName: string | undefined = undefined;
+    if (driverId) {
+      const driverUser = users.find(u => u.id === driverId);
+      driverName = driverUser?.name;
+
+      // Check if driver is already driving another in-service vehicle
+      const conflictVeh = vehicles.find(
+        v => v.id !== vehicleId && v.assignedDriverId === driverId && v.status === 'In Service'
+      );
+      if (conflictVeh) {
+        return {
+          success: false,
+          message: `Driver ${driverName} is already assigned to active bus ${conflictVeh.regNumber}.`
+        };
+      }
+    }
+
+    const updatedStatus: VehicleStatus = routeId && driverId ? 'In Service' : 'Idle / Depot';
+    const isSimulating = updatedStatus === 'In Service';
+
+    setVehicles(prev =>
+      prev.map(v =>
+        v.id === vehicleId
+          ? {
+              ...v,
+              assignedRouteId: routeId,
+              assignedDriverId: driverId,
+              assignedDriverName: driverName,
+              status: updatedStatus,
+              isSimulating,
+              speedKmH: isSimulating ? 30 : 0
+            }
+          : v
+      )
+    );
+
+    logAction(
+      'Fleet Dispatch',
+      `Assigned bus ${veh.regNumber} to Route ${routeId || 'None'} with Driver ${driverName || 'None'}`
+    );
+    return { success: true };
+  };
+
+  const setVehicleMaintenance = (vehicleId: string, inMaintenance: boolean) => {
+    setVehicles(prev =>
+      prev.map(v => {
+        if (v.id === vehicleId) {
+          const newStatus: VehicleStatus = inMaintenance ? 'Maintenance' : 'Idle / Depot';
+          return {
+            ...v,
+            status: newStatus,
+            isSimulating: false,
+            speedKmH: 0,
+            assignedDriverId: inMaintenance ? null : v.assignedDriverId,
+            assignedDriverName: inMaintenance ? undefined : v.assignedDriverName
+          };
+        }
+        return v;
+      })
+    );
+
+    const veh = vehicles.find(v => v.id === vehicleId);
+    logAction(
+      inMaintenance ? 'Maintenance Dispatch' : 'Maintenance Cleared',
+      inMaintenance
+        ? `Bus ${veh?.regNumber} dispatched to depot maintenance`
+        : `Bus ${veh?.regNumber} released from maintenance to depot bay`
+    );
   };
 
   const updateDriverStatus = (
@@ -349,6 +547,94 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   };
 
+  // DRIVER TRIP CONTROLS
+  const startTrip = (vehicleId: string, tripId?: string) => {
+    setVehicles(prev =>
+      prev.map(v =>
+        v.id === vehicleId
+          ? { ...v, status: 'In Service', isSimulating: true, speedKmH: 35, lastUpdated: 'Just now' }
+          : v
+      )
+    );
+
+    if (tripId) {
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setSchedules(prev =>
+        prev.map(s => (s.tripId === tripId ? { ...s, actualDepartureTime: nowStr, status: 'On Time' } : s))
+      );
+    }
+
+    const veh = vehicles.find(v => v.id === vehicleId);
+    logAction('Trip Started', `Driver ${currentUser.name} started trip on bus ${veh?.regNumber}`);
+  };
+
+  const pauseTrip = (vehicleId: string) => {
+    setVehicles(prev =>
+      prev.map(v =>
+        v.id === vehicleId
+          ? { ...v, status: 'Idle / Depot', isSimulating: false, speedKmH: 0, lastUpdated: 'Just now' }
+          : v
+      )
+    );
+
+    const veh = vehicles.find(v => v.id === vehicleId);
+    logAction('Trip Paused', `Driver ${currentUser.name} paused bus ${veh?.regNumber} at station layover`);
+  };
+
+  const resumeTrip = (vehicleId: string) => {
+    setVehicles(prev =>
+      prev.map(v =>
+        v.id === vehicleId
+          ? { ...v, status: 'In Service', isSimulating: true, speedKmH: 35, lastUpdated: 'Just now' }
+          : v
+      )
+    );
+
+    const veh = vehicles.find(v => v.id === vehicleId);
+    logAction('Trip Resumed', `Driver ${currentUser.name} resumed route transit on bus ${veh?.regNumber}`);
+  };
+
+  const completeTrip = (vehicleId: string, tripId?: string) => {
+    setVehicles(prev =>
+      prev.map(v =>
+        v.id === vehicleId
+          ? { ...v, status: 'Off Duty', isSimulating: false, speedKmH: 0, delayMinutes: 0, lastUpdated: 'Just now' }
+          : v
+      )
+    );
+
+    if (tripId) {
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setSchedules(prev =>
+        prev.map(s => (s.tripId === tripId ? { ...s, actualArrivalTime: nowStr, status: 'Completed' } : s))
+      );
+    }
+
+    const veh = vehicles.find(v => v.id === vehicleId);
+    logAction('Trip Completed', `Driver ${currentUser.name} completed trip and ended shift on bus ${veh?.regNumber}`);
+  };
+
+  // TIMETABLE SCHEDULING ACTIONS
+  const addSchedule = (itemData: Omit<RouteScheduleItem, 'id'>) => {
+    const newSchedule: RouteScheduleItem = {
+      ...itemData,
+      id: `sch-${Date.now().toString().slice(-4)}`
+    };
+    setSchedules(prev => [newSchedule, ...prev]);
+    logAction('Schedule Added', `Added trip ${newSchedule.tripId} for Line ${newSchedule.routeCode}`);
+  };
+
+  const updateSchedule = (item: RouteScheduleItem) => {
+    setSchedules(prev => prev.map(s => (s.id === item.id ? item : s)));
+    logAction('Schedule Updated', `Updated timetable trip ${item.tripId}`);
+  };
+
+  const deleteSchedule = (id: string) => {
+    setSchedules(prev => prev.filter(s => s.id !== id));
+    logAction('Schedule Deleted', `Removed timetable entry #${id}`);
+  };
+
+  // PASSENGER FEEDBACK ACTIONS
   const submitFeedback = (
     feedbackData: Omit<PassengerFeedback, 'id' | 'timestamp' | 'status' | 'sentiment'>
   ) => {
@@ -364,16 +650,17 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
       status: 'Pending'
     };
     setFeedbacks(prev => [newFb, ...prev]);
-    logAction('Passenger Feedback', `New ${newFb.rating}-star review received on Route ${newFb.routeCode}`);
+    logAction('Passenger Feedback', `New ${newFb.rating}-star review on Route ${newFb.routeCode}`);
   };
 
   const respondToFeedback = (id: string, response: string) => {
     setFeedbacks(prev =>
       prev.map(fb => (fb.id === id ? { ...fb, adminResponse: response, status: 'Reviewed' } : fb))
     );
-    logAction('Feedback Response', `Official response provided for feedback #${id}`);
+    logAction('Feedback Redressal', `Official response provided for feedback #${id}`);
   };
 
+  // SERVICE DELAY & INCIDENT MANAGEMENT
   const reportDelay = (delayData: Omit<ServiceDelay, 'id' | 'reportedAt' | 'status'>) => {
     const newDelay: ServiceDelay = {
       ...delayData,
@@ -383,7 +670,7 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setDelays(prev => [newDelay, ...prev]);
 
-    // Also update matching vehicle delay
+    // Synchronize vehicle delay
     if (newDelay.vehicleId) {
       setVehicles(prev =>
         prev.map(v =>
@@ -400,6 +687,7 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const resolveDelay = (id: string, actionNote: string) => {
+    const delayItem = delays.find(d => d.id === id);
     setDelays(prev =>
       prev.map(d => {
         if (d.id === id) {
@@ -412,6 +700,18 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return d;
       })
     );
+
+    // Reset vehicle delay if tied to this delay
+    if (delayItem?.vehicleId) {
+      setVehicles(prev =>
+        prev.map(v =>
+          v.regNumber === delayItem.vehicleId || v.id === delayItem.vehicleId
+            ? { ...v, delayMinutes: 0, status: 'In Service' }
+            : v
+        )
+      );
+    }
+
     logAction('Delay Resolved', `Delay #${id} marked as resolved: ${actionNote}`);
   };
 
@@ -424,7 +724,9 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setFeedbacks(INITIAL_FEEDBACK);
     setDelays(INITIAL_SERVICE_DELAYS);
     setAuditLogs(INITIAL_AUDIT_LOGS);
+    setUsers(INITIAL_USERS);
     setCurrentUser(INITIAL_USERS[0]);
+    setIsAuthenticated(false);
     logAction('System Reset', 'All transit databases restored to default specifications');
   };
 
@@ -432,8 +734,12 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <TransitContext.Provider
       value={{
         currentUser,
+        isAuthenticated,
+        login,
+        logout,
         switchRole,
         users,
+        addUser,
         routes,
         stops,
         vehicles,
@@ -455,7 +761,16 @@ export const TransitProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addStop,
         updateStop,
         updateVehicle,
+        assignVehicle,
+        setVehicleMaintenance,
         updateDriverStatus,
+        startTrip,
+        pauseTrip,
+        resumeTrip,
+        completeTrip,
+        addSchedule,
+        updateSchedule,
+        deleteSchedule,
         submitFeedback,
         respondToFeedback,
         reportDelay,

@@ -133,3 +133,4 @@ docker compose up --build -d
 | **Passenger** | Elena Rostova | `passenger@gmail.com` | Commuter Card 721 |
 
 *(You can also use the 1-click role switcher in the top navigation bar at any time).*
+

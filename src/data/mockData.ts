@@ -1,160 +1,234 @@
-import { TransitStop, TransitRoute, TransitVehicle, RouteScheduleItem, PassengerFeedback, ServiceDelay, User, SystemAuditLog } from '../types';
+import {
+  TransitStop,
+  TransitRoute,
+  TransitVehicle,
+  RouteScheduleItem,
+  PassengerFeedback,
+  ServiceDelay,
+  User,
+  SystemAuditLog
+} from '../types';
 
 export const INITIAL_USERS: User[] = [
   {
     id: 'usr-admin-1',
-    name: 'Sarah Jenkins (Chief Director)',
-    email: 'admin@metrotransit.org',
+    name: 'Sri. K. V. Ramanathan, IPS',
+    email: 'admin@tgsrtc.gov.in',
+    username: 'admin',
+    password: 'admin123',
     role: 'Admin',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
-    badgeNumber: 'DIR-8801',
-    operatorCompany: 'Metro Transit Authority'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+    badgeNumber: 'IPS-TG-01',
+    operatorCompany: 'TGSRTC - Telangana State Road Transport Corporation',
+    depot: 'TGSRTC Head Office, Bus Bhavan, Hyderabad'
   },
   {
     id: 'usr-op-1',
-    name: 'Marcus Vance (Dispatch Manager)',
-    email: 'operator@metrotransit.org',
+    name: 'S. Rajalingam (Regional Manager)',
+    email: 'operator@tgsrtc.gov.in',
+    username: 'operator',
+    password: 'operator123',
     role: 'Transport Operator',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80',
-    badgeNumber: 'DISP-402',
-    operatorCompany: 'CityLink Transit Fleet Co.'
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+    badgeNumber: 'RM-WGL-401',
+    operatorCompany: 'TGSRTC Warangal Region',
+    depot: 'Warangal Regional Control Room'
   },
   {
     id: 'usr-driver-1',
-    name: 'David Rodriguez (Senior Driver)',
-    email: 'driver@metrotransit.org',
+    name: 'Ramesh Goud (Staff Driver)',
+    email: 'driver@tgsrtc.gov.in',
+    username: 'driver',
+    password: 'driver123',
     role: 'Driver',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    badgeNumber: 'DRV-1099',
-    operatorCompany: 'CityLink Transit Fleet Co.'
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80',
+    badgeNumber: 'TG-DRV-1089',
+    operatorCompany: 'TGSRTC Warangal Depot-1',
+    depot: 'Warangal Depot-1'
   },
   {
     id: 'usr-pass-1',
-    name: 'Elena Rostova (Daily Commuter)',
-    email: 'passenger@gmail.com',
+    name: 'Ananya Reddy (Daily Commuter)',
+    email: 'passenger@tgsrtc.gov.in',
+    username: 'passenger',
+    password: 'passenger123',
     role: 'Passenger',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-    badgeNumber: 'PASS-CARD-721'
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+    badgeNumber: 'KU-PASS-9042',
+    depot: 'Hanamkonda'
   }
 ];
 
 export const INITIAL_STOPS: TransitStop[] = [
   {
-    id: 'stop-1',
-    code: 'ST-CV1',
-    name: 'Civic Center Plaza',
-    location: { lat: 37.7793, lng: -122.4192 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk'],
+    id: 'stop-kzp',
+    code: 'KZP-RLY',
+    name: 'Kazipet Railway Junction Bus Stop',
+    teluguName: 'కాజీపేట రైల్వే జంక్షన్',
+    location: { lat: 17.9784, lng: 79.5085 },
+    zone: 'Kazipet Zone',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk', 'Drinking Water'],
+    routesServed: ['route-101', 'route-408']
+  },
+  {
+    id: 'stop-ftn',
+    code: 'FTN-XRD',
+    name: 'Fathima Nagar Crossroads',
+    teluguName: 'ఫాతిమా నగర్ చౌరస్తా',
+    location: { lat: 17.9865, lng: 79.5310 },
+    zone: 'Kazipet Zone',
+    amenities: ['Shelter', 'Digital Display'],
+    routesServed: ['route-101', 'route-408']
+  },
+  {
+    id: 'stop-sbd',
+    code: 'SBD-COL',
+    name: 'Subedari / District Collectorate',
+    teluguName: 'సుబేదారి / కలెక్టరేట్',
+    location: { lat: 18.0015, lng: 79.5620 },
+    zone: 'Hanamkonda Central',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Drinking Water'],
     routesServed: ['route-101', 'route-204']
   },
   {
-    id: 'stop-2',
-    code: 'ST-UN2',
-    name: 'Union Square Central',
-    location: { lat: 37.7879, lng: -122.4075 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk'],
-    routesServed: ['route-101', 'route-408']
+    id: 'stop-hnk',
+    code: 'HNK-CBS',
+    name: 'Hanamkonda Central Bus Station',
+    teluguName: 'హనుమకొండ బస్ స్టేషన్ (డిపో)',
+    location: { lat: 18.0072, lng: 79.5702 },
+    zone: 'Hanamkonda Central',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
+    routesServed: ['route-101', 'route-204', 'route-305']
   },
   {
-    id: 'stop-3',
-    code: 'ST-FN3',
-    name: 'Financial District Tower',
-    location: { lat: 37.7946, lng: -122.4005 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Bicycle Rack', 'Ticket Kiosk'],
-    routesServed: ['route-101', 'route-408']
-  },
-  {
-    id: 'stop-4',
-    code: 'ST-EM4',
-    name: 'Embarcadero Ferry Terminal',
-    location: { lat: 37.7955, lng: -122.3937 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Bicycle Rack'],
-    routesServed: ['route-101']
-  },
-  {
-    id: 'stop-5',
-    code: 'ST-FW5',
-    name: "Fisherman's Wharf Pier 39",
-    location: { lat: 37.8080, lng: -122.4098 },
-    zone: 'Zone 2 - North Coast',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access'],
-    routesServed: ['route-101']
-  },
-  {
-    id: 'stop-6',
-    code: 'ST-GG6',
-    name: 'Golden Gate Park East',
-    location: { lat: 37.7712, lng: -122.4687 },
-    zone: 'Zone 3 - Westside',
-    amenities: ['Shelter', 'Bicycle Rack', 'Wheelchair Access'],
+    id: 'stop-ku',
+    code: 'KU-GATE',
+    name: 'Kakatiya University Main Gate',
+    teluguName: 'కాకతీయ విశ్వవిద్యాలయం మెయిన్ గేట్',
+    location: { lat: 18.0336, lng: 79.5512 },
+    zone: 'KU Campus Zone',
+    amenities: ['Shelter', 'Digital Display', 'Bicycle Rack'],
     routesServed: ['route-204', 'route-305']
   },
   {
-    id: 'stop-7',
-    code: 'ST-AL7',
-    name: 'Alamo Square Park',
-    location: { lat: 37.7764, lng: -122.4346 },
-    zone: 'Zone 2 - Central District',
-    amenities: ['Shelter', 'Digital Display'],
+    id: 'stop-mgm',
+    code: 'MGM-HSP',
+    name: 'MGM Government General Hospital',
+    teluguName: 'ఎం.జి.ఎం ప్రభుత్వ ఆసుపత్రి',
+    location: { lat: 17.9942, lng: 79.5898 },
+    zone: 'Warangal North',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access'],
+    routesServed: ['route-101', 'route-204']
+  },
+  {
+    id: 'stop-wgl',
+    code: 'WGL-CBS',
+    name: 'Warangal City Bus Station (CBS / Station)',
+    teluguName: 'వరంగల్ సిటీ బస్ స్టేషన్ (రైల్వే స్టేషన్)',
+    location: { lat: 17.9689, lng: 79.6012 },
+    zone: 'Warangal Central Core',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
+    routesServed: ['route-101', 'route-204', 'route-408', 'route-502']
+  },
+  {
+    id: 'stop-wft',
+    code: 'WGL-FRT',
+    name: 'Warangal Fort (Khila Warangal Kakatiya Arch)',
+    teluguName: 'వరంగల్ కోట (ఖిలా వరంగల్)',
+    location: { lat: 17.9547, lng: 79.6178 },
+    zone: 'Heritage Tourism Zone',
+    amenities: ['Shelter', 'Drinking Water'],
     routesServed: ['route-204']
   },
   {
-    id: 'stop-8',
-    code: 'ST-MS8',
-    name: 'Mission 24th St District',
-    location: { lat: 37.7522, lng: -122.4181 },
-    zone: 'Zone 2 - Central District',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk'],
-    routesServed: ['route-204', 'route-305']
-  },
-  {
-    id: 'stop-9',
-    code: 'ST-OB9',
-    name: 'Ocean Beach Promenade',
-    location: { lat: 37.7595, lng: -122.5098 },
-    zone: 'Zone 3 - Westside Coastal',
-    amenities: ['Shelter', 'Bicycle Rack'],
+    id: 'stop-hsp',
+    code: 'HSP-JNC',
+    name: 'Hasanparthy Junction',
+    teluguName: 'హసన్‌పర్తి జంక్షన్',
+    location: { lat: 18.0790, lng: 79.5350 },
+    zone: 'Greater Warangal North',
+    amenities: ['Shelter'],
     routesServed: ['route-305']
   },
   {
-    id: 'stop-10',
-    code: 'ST-CS10',
-    name: 'Castro District Station',
-    location: { lat: 37.7628, lng: -122.4350 },
-    zone: 'Zone 2 - Central District',
+    id: 'stop-mdk',
+    code: 'MDK-IND',
+    name: 'Madikonda Industrial Corridor',
+    teluguName: 'మడికొండ ఇండస్ట్రియల్ కారిడార్',
+    location: { lat: 17.9510, lng: 79.4620 },
+    zone: 'Warangal West Suburb',
+    amenities: ['Shelter', 'Digital Display'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-jgn',
+    code: 'JGN-RTC',
+    name: 'Jangaon RTC Bus Station',
+    teluguName: 'జనగామ ఆర్టీసీ బస్ స్టేషన్',
+    location: { lat: 17.7245, lng: 79.1780 },
+    zone: 'Jangaon District Central',
+    amenities: ['Shelter', 'Digital Display', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-alr',
+    code: 'ALR-XRD',
+    name: 'Aler Highway Junction',
+    teluguName: 'ఆలేరు చౌరస్తా (హైవే)',
+    location: { lat: 17.6530, lng: 79.0270 },
+    zone: 'Yadadri Corridor',
+    amenities: ['Shelter'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-bng',
+    code: 'BNG-BYP',
+    name: 'Bhuvanagiri Bypass (Bhongir Fort X Road)',
+    teluguName: 'భువనగిరి బైపాస్',
+    location: { lat: 17.5110, lng: 78.8890 },
+    zone: 'Yadadri Bhuvanagiri Zone',
+    amenities: ['Shelter', 'Digital Display'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-upl',
+    code: 'UPL-HYD',
+    name: 'Uppal Cross Roads Bus Station, Hyderabad',
+    teluguName: 'ఉప్పల్ చౌరస్తా, హైదరాబాద్',
+    location: { lat: 17.3984, lng: 78.5583 },
+    zone: 'Hyderabad East Core',
     amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-mgb',
+    code: 'MGB-HYD',
+    name: 'MGBS Central Bus Station, Hyderabad (Imlibun)',
+    teluguName: 'ఎం.జి.బి.ఎస్ బస్ స్టేషన్, హైదరాబాద్',
+    location: { lat: 17.3786, lng: 78.4808 },
+    zone: 'Hyderabad Central Terminal',
+    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
+    routesServed: ['route-408']
+  },
+  {
+    id: 'stop-krm',
+    code: 'KRM-CBS',
+    name: 'Karimnagar Central Bus Station (RTC Depot)',
+    teluguName: 'కరీంనగర్ బస్ స్టేషన్',
+    location: { lat: 18.4386, lng: 79.1288 },
+    zone: 'Karimnagar Central',
+    amenities: ['Shelter', 'Digital Display', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
     routesServed: ['route-305']
   },
   {
-    id: 'stop-11',
-    code: 'ST-SO11',
-    name: 'SOMA Tech Corridor Hub',
-    location: { lat: 37.7785, lng: -122.3990 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Bicycle Rack'],
-    routesServed: ['route-408']
-  },
-  {
-    id: 'stop-12',
-    code: 'ST-CL12',
-    name: '4th & King Caltrain Depot',
-    location: { lat: 37.7766, lng: -122.3949 },
-    zone: 'Zone 1 - Downtown Core',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk'],
-    routesServed: ['route-408']
-  },
-  {
-    id: 'stop-13',
-    code: 'ST-AP13',
-    name: 'International Airport Gate Hub',
-    location: { lat: 37.6213, lng: -122.3790 },
-    zone: 'Zone 4 - South Airport Special',
-    amenities: ['Shelter', 'Digital Display', 'Wheelchair Access', 'Ticket Kiosk', 'Bicycle Rack'],
-    routesServed: ['route-408']
+    id: 'stop-khm',
+    code: 'KHM-CBS',
+    name: 'Khammam Old Bus Depot (Wyra Road)',
+    teluguName: 'ఖమ్మం బస్ డిపో (వైరా రోడ్)',
+    location: { lat: 17.2473, lng: 80.1514 },
+    zone: 'Khammam Central',
+    amenities: ['Shelter', 'Digital Display', 'Ticket Kiosk', 'Restroom', 'Drinking Water'],
+    routesServed: ['route-502']
   }
 ];
 
@@ -162,122 +236,175 @@ export const INITIAL_ROUTES: TransitRoute[] = [
   {
     id: 'route-101',
     code: '101',
-    name: 'Blue Metro Express',
-    mode: 'Bus',
-    color: '#006bc9',
-    description: 'Direct high-frequency corridor from Civic Center across Union Sq to Ferry Terminal & Wharf.',
-    operatingHours: '05:00 AM - 11:45 PM',
-    frequencyMinutes: 10,
+    name: 'Kazipet - Hanamkonda - Warangal Tri-City Metro Express',
+    teluguName: 'కాజీపేట - హనుమకొండ - వరంగల్ సిటీ మెట్రో ఎక్స్‌ప్రెస్',
+    mode: 'Metro Express',
+    color: '#0d6e52', // TGSRTC Forest Green
+    description: 'High-frequency urban arterial connecting Kazipet Railway Junction, Subedari Collectorate, HNK Depot, MGM Hospital and Warangal CBS.',
+    operatingHours: '05:00 AM - 11:30 PM IST',
+    frequencyMinutes: 8,
     isPublished: true,
-    fare: 2.75,
-    totalDistanceKm: 7.2,
-    averageDurationMinutes: 28,
+    fare: 30.0,
+    totalDistanceKm: 15.8,
+    averageDurationMinutes: 40,
+    depotOrigin: 'Kazipet Junction',
+    depotDestination: 'Warangal CBS',
     stops: [
-      INITIAL_STOPS[0], // Civic Center
-      INITIAL_STOPS[1], // Union Square
-      INITIAL_STOPS[2], // Financial District
-      INITIAL_STOPS[3], // Ferry Terminal
-      INITIAL_STOPS[4]  // Wharf
+      INITIAL_STOPS[0], // Kazipet
+      INITIAL_STOPS[1], // Fathima Nagar
+      INITIAL_STOPS[2], // Subedari
+      INITIAL_STOPS[3], // Hanamkonda
+      INITIAL_STOPS[5], // MGM
+      INITIAL_STOPS[6]  // Warangal CBS
     ],
     waypoints: [
-      { lat: 37.7793, lng: -122.4192 },
-      { lat: 37.7840, lng: -122.4130 },
-      { lat: 37.7879, lng: -122.4075 },
-      { lat: 37.7915, lng: -122.4035 },
-      { lat: 37.7946, lng: -122.4005 },
-      { lat: 37.7955, lng: -122.3937 },
-      { lat: 37.8010, lng: -122.3980 },
-      { lat: 37.8055, lng: -122.4040 },
-      { lat: 37.8080, lng: -122.4098 }
+      { lat: 17.9784, lng: 79.5085 }, // Kazipet
+      { lat: 17.9820, lng: 79.5190 },
+      { lat: 17.9865, lng: 79.5310 }, // Fathima Nagar
+      { lat: 17.9940, lng: 79.5470 },
+      { lat: 18.0015, lng: 79.5620 }, // Subedari
+      { lat: 18.0072, lng: 79.5702 }, // Hanamkonda
+      { lat: 18.0010, lng: 79.5790 },
+      { lat: 17.9942, lng: 79.5898 }, // MGM
+      { lat: 17.9815, lng: 79.5960 },
+      { lat: 17.9689, lng: 79.6012 }  // Warangal CBS
     ]
   },
   {
     id: 'route-204',
     code: '204',
-    name: 'Emerald Crosstown Connector',
-    mode: 'Tram',
-    color: '#059669',
-    description: 'Connecting Golden Gate Park with Alamo Square, Downtown and the vibrant Mission corridor.',
-    operatingHours: '05:30 AM - 11:15 PM',
+    name: 'Kakatiya Heritage Circular (KU Campus ⇄ Warangal Fort)',
+    teluguName: 'కాకతీయ విశ్వవిద్యాలయం - వరంగల్ కోట సిటీ ఆర్డినరీ',
+    mode: 'City Ordinary',
+    color: '#991b1b', // TGSRTC Classic Bus Red
+    description: 'Connects Kakatiya University campus, Hanamkonda, Subedari, MGM Hospital, Warangal CBS, terminating at the historic Khila Warangal Fort.',
+    operatingHours: '05:30 AM - 10:45 PM IST',
     frequencyMinutes: 12,
     isPublished: true,
-    fare: 3.00,
-    totalDistanceKm: 8.5,
-    averageDurationMinutes: 32,
+    fare: 25.0,
+    totalDistanceKm: 18.4,
+    averageDurationMinutes: 48,
+    depotOrigin: 'KU Campus',
+    depotDestination: 'Warangal Fort',
     stops: [
-      INITIAL_STOPS[5], // Golden Gate Park
-      INITIAL_STOPS[6], // Alamo Sq
-      INITIAL_STOPS[0], // Civic Center
-      INITIAL_STOPS[7]  // Mission 24th
+      INITIAL_STOPS[4], // KU
+      INITIAL_STOPS[3], // Hanamkonda
+      INITIAL_STOPS[2], // Subedari
+      INITIAL_STOPS[5], // MGM
+      INITIAL_STOPS[6], // Warangal CBS
+      INITIAL_STOPS[7]  // Warangal Fort
     ],
     waypoints: [
-      { lat: 37.7712, lng: -122.4687 },
-      { lat: 37.7735, lng: -122.4500 },
-      { lat: 37.7764, lng: -122.4346 },
-      { lat: 37.7780, lng: -122.4250 },
-      { lat: 37.7793, lng: -122.4192 },
-      { lat: 37.7650, lng: -122.4190 },
-      { lat: 37.7522, lng: -122.4181 }
+      { lat: 18.0336, lng: 79.5512 }, // KU
+      { lat: 18.0200, lng: 79.5600 },
+      { lat: 18.0072, lng: 79.5702 }, // Hanamkonda
+      { lat: 18.0015, lng: 79.5620 }, // Subedari
+      { lat: 17.9942, lng: 79.5898 }, // MGM
+      { lat: 17.9790, lng: 79.5950 },
+      { lat: 17.9689, lng: 79.6012 }, // Warangal CBS
+      { lat: 17.9610, lng: 79.6090 },
+      { lat: 17.9547, lng: 79.6178 }  // Warangal Fort
     ]
   },
   {
     id: 'route-305',
     code: '305',
-    name: 'Sunset Rapid Shoreline',
-    mode: 'Bus',
-    color: '#d97706',
-    description: 'Fast cross-district route from Ocean Beach via Castro to Mission District.',
-    operatingHours: '06:00 AM - 10:30 PM',
-    frequencyMinutes: 15,
+    name: 'Warangal - Karimnagar Deluxe Express (via Husnabad)',
+    teluguName: 'వరంగల్ - కరీంనగర్ డీలక్స్ ఎక్స్‌ప్రెస్',
+    mode: 'Deluxe',
+    color: '#b45309', // TGSRTC Amber Deluxe
+    description: 'Inter-district highway corridor connecting Hanamkonda Central Depot, Hasanparthy, Husnabad highway, terminating at Karimnagar Central Bus Station.',
+    operatingHours: '05:00 AM - 11:00 PM IST',
+    frequencyMinutes: 20,
     isPublished: true,
-    fare: 2.75,
-    totalDistanceKm: 10.1,
-    averageDurationMinutes: 36,
+    fare: 120.0,
+    totalDistanceKm: 74.0,
+    averageDurationMinutes: 95,
+    depotOrigin: 'Hanamkonda Depot',
+    depotDestination: 'Karimnagar CBS',
     stops: [
-      INITIAL_STOPS[8], // Ocean Beach
-      INITIAL_STOPS[5], // Golden Gate Park
-      INITIAL_STOPS[9], // Castro
-      INITIAL_STOPS[7]  // Mission 24th
+      INITIAL_STOPS[3], // Hanamkonda
+      INITIAL_STOPS[4], // KU
+      INITIAL_STOPS[8], // Hasanparthy
+      INITIAL_STOPS[15] // Karimnagar
     ],
     waypoints: [
-      { lat: 37.7595, lng: -122.5098 },
-      { lat: 37.7670, lng: -122.4880 },
-      { lat: 37.7712, lng: -122.4687 },
-      { lat: 37.7680, lng: -122.4490 },
-      { lat: 37.7628, lng: -122.4350 },
-      { lat: 37.7580, lng: -122.4260 },
-      { lat: 37.7522, lng: -122.4181 }
+      { lat: 18.0072, lng: 79.5702 }, // HNK
+      { lat: 18.0336, lng: 79.5512 }, // KU
+      { lat: 18.0790, lng: 79.5350 }, // Hasanparthy
+      { lat: 18.1500, lng: 79.4800 },
+      { lat: 18.2300, lng: 79.3900 }, // Husnabad approach
+      { lat: 18.3300, lng: 79.2500 },
+      { lat: 18.4386, lng: 79.1288 }  // Karimnagar CBS
     ]
   },
   {
     id: 'route-408',
     code: '408',
-    name: 'Airport Metro Direct',
-    mode: 'Express Shuttle',
-    color: '#7c3aed',
-    description: 'Dedicated rapid shuttle connecting Union Square and SOMA with Airport Terminals.',
-    operatingHours: '04:00 AM - 01:00 AM',
+    name: 'Warangal - Hyderabad Garuda Super Luxury (via Jangaon & Uppal)',
+    teluguName: 'వరంగల్ - హైదరాబాద్ గరుడ సూపర్ లగ్జరీ (జనగామ, ఉప్పల్ మీదుగా)',
+    mode: 'Super Luxury',
+    color: '#1d4ed8', // Garuda Royal Blue
+    description: 'Premier NH-163 express corridor connecting Warangal CBS, Kazipet, Madikonda, Jangaon RTC Stand, Aler, Bhongir bypass, Uppal and Hyderabad MGBS.',
+    operatingHours: '04:30 AM - 11:55 PM IST',
     frequencyMinutes: 15,
     isPublished: true,
-    fare: 6.50,
-    totalDistanceKm: 18.2,
-    averageDurationMinutes: 24,
+    fare: 240.0,
+    totalDistanceKm: 142.5,
+    averageDurationMinutes: 165,
+    depotOrigin: 'Warangal CBS',
+    depotDestination: 'Hyderabad MGBS',
     stops: [
-      INITIAL_STOPS[1],  // Union Sq
-      INITIAL_STOPS[2],  // Financial District
-      INITIAL_STOPS[10], // SOMA
-      INITIAL_STOPS[11], // Caltrain Depot
-      INITIAL_STOPS[12]  // Airport Hub
+      INITIAL_STOPS[6],  // Warangal CBS
+      INITIAL_STOPS[0],  // Kazipet
+      INITIAL_STOPS[9],  // Madikonda
+      INITIAL_STOPS[10], // Jangaon
+      INITIAL_STOPS[11], // Aler
+      INITIAL_STOPS[12], // Bhongir
+      INITIAL_STOPS[13], // Uppal
+      INITIAL_STOPS[14]  // MGBS Hyderabad
     ],
     waypoints: [
-      { lat: 37.7879, lng: -122.4075 },
-      { lat: 37.7946, lng: -122.4005 },
-      { lat: 37.7850, lng: -122.3970 },
-      { lat: 37.7785, lng: -122.3990 },
-      { lat: 37.7766, lng: -122.3949 },
-      { lat: 37.7200, lng: -122.3880 },
-      { lat: 37.6600, lng: -122.3820 },
-      { lat: 37.6213, lng: -122.3790 }
+      { lat: 17.9689, lng: 79.6012 }, // Warangal CBS
+      { lat: 17.9784, lng: 79.5085 }, // Kazipet
+      { lat: 17.9510, lng: 79.4620 }, // Madikonda
+      { lat: 17.8500, lng: 79.3200 },
+      { lat: 17.7245, lng: 79.1780 }, // Jangaon
+      { lat: 17.6530, lng: 79.0270 }, // Aler
+      { lat: 17.5110, lng: 78.8890 }, // Bhongir
+      { lat: 17.4300, lng: 78.6800 },
+      { lat: 17.3984, lng: 78.5583 }, // Uppal
+      { lat: 17.3786, lng: 78.4808 }  // MGBS
+    ]
+  },
+  {
+    id: 'route-502',
+    code: '502',
+    name: 'Warangal - Khammam Green EV Express',
+    teluguName: 'వరంగల్ - ఖమ్మం ఎలక్ట్రిక్ ఈవీ ఎక్స్‌ప్రెస్',
+    mode: 'Electric EV',
+    color: '#0284c7', // Clean Cyan/Teal
+    description: 'Zero-emission electric corridor connecting Warangal CBS to Khammam Central Bus Depot via Wardhannapet and Kesamudram X Roads.',
+    operatingHours: '05:30 AM - 10:30 PM IST',
+    frequencyMinutes: 30,
+    isPublished: true,
+    fare: 185.0,
+    totalDistanceKm: 112.0,
+    averageDurationMinutes: 135,
+    depotOrigin: 'Warangal CBS',
+    depotDestination: 'Khammam Depot',
+    stops: [
+      INITIAL_STOPS[6],  // Warangal CBS
+      INITIAL_STOPS[7],  // Warangal Fort X Rd
+      INITIAL_STOPS[16]  // Khammam
+    ],
+    waypoints: [
+      { lat: 17.9689, lng: 79.6012 }, // Warangal CBS
+      { lat: 17.9547, lng: 79.6178 }, // Fort
+      { lat: 17.8200, lng: 79.7500 }, // Wardhannapet
+      { lat: 17.6100, lng: 79.9100 },
+      { lat: 17.4500, lng: 80.0300 },
+      { lat: 17.2473, lng: 80.1514 }  // Khammam
     ]
   }
 ];
@@ -285,114 +412,143 @@ export const INITIAL_ROUTES: TransitRoute[] = [
 export const INITIAL_VEHICLES: TransitVehicle[] = [
   {
     id: 'veh-101A',
-    regNumber: 'BUS-1011',
-    model: 'Volvo 7900 Electric Zero Emission',
-    mode: 'Bus',
+    regNumber: 'TG-03-Z-1089',
+    model: 'Ashok Leyland BS-VI Metro Express',
+    mode: 'Metro Express',
+    depot: 'Warangal Depot-1',
     assignedRouteId: 'route-101',
     assignedDriverId: 'usr-driver-1',
-    assignedDriverName: 'David Rodriguez',
+    assignedDriverName: 'Ramesh Goud',
     status: 'In Service',
-    currentLocation: { lat: 37.7879, lng: -122.4075 },
-    heading: 45,
-    speedKmH: 34,
+    currentLocation: { lat: 17.9942, lng: 79.5898 }, // near MGM Hospital
+    heading: 215,
+    speedKmH: 36,
     batteryOrFuelPercent: 88,
     occupancy: 'Moderate',
-    occupancyPercent: 58,
-    totalDistanceTodayKm: 142.5,
-    lastUpdated: 'Just now',
-    currentStopIndex: 1,
+    occupancyPercent: 62,
+    totalDistanceTodayKm: 148.5,
+    lastUpdated: 'Just now (IST)',
+    currentStopIndex: 4,
     isSimulating: true,
-    delayMinutes: 2,
-    airConditioned: true,
+    delayMinutes: 0,
+    airConditioned: false,
     wifiEnabled: true
   },
   {
     id: 'veh-101B',
-    regNumber: 'BUS-1012',
-    model: 'BYD K9 High-Capacity Electric',
-    mode: 'Bus',
+    regNumber: 'TG-03-Z-2415',
+    model: 'Tata Marcopolo City Transit Bus',
+    mode: 'Metro Express',
+    depot: 'Hanamkonda Depot',
     assignedRouteId: 'route-101',
-    assignedDriverId: 'drv-204',
-    assignedDriverName: 'Carlos Gomez',
+    assignedDriverId: 'drv-202',
+    assignedDriverName: 'K. Venkateswarlu',
     status: 'In Service',
-    currentLocation: { lat: 37.8010, lng: -122.3980 },
-    heading: 320,
+    currentLocation: { lat: 17.9865, lng: 79.5310 }, // near Fathima Nagar
+    heading: 65,
     speedKmH: 28,
-    batteryOrFuelPercent: 74,
+    batteryOrFuelPercent: 72,
     occupancy: 'Crowded',
-    occupancyPercent: 84,
-    totalDistanceTodayKm: 168.0,
+    occupancyPercent: 85,
+    totalDistanceTodayKm: 182.0,
     lastUpdated: '1 min ago',
-    currentStopIndex: 3,
+    currentStopIndex: 1,
     isSimulating: true,
-    delayMinutes: 7,
-    airConditioned: true,
-    wifiEnabled: true
+    delayMinutes: 6,
+    airConditioned: false,
+    wifiEnabled: false
   },
   {
     id: 'veh-204A',
-    regNumber: 'TRM-2041',
-    model: 'Siemens Combino Low-Floor Light Rail',
-    mode: 'Tram',
+    regNumber: 'TG-03-Z-3320',
+    model: 'Ashok Leyland Viking City Ordinary',
+    mode: 'City Ordinary',
+    depot: 'Warangal Depot-2',
     assignedRouteId: 'route-204',
     assignedDriverId: 'drv-301',
-    assignedDriverName: 'Jessica Miller',
+    assignedDriverName: 'Mohammad Khaja',
     status: 'In Service',
-    currentLocation: { lat: 37.7764, lng: -122.4346 },
-    heading: 110,
-    speedKmH: 42,
-    batteryOrFuelPercent: 92,
+    currentLocation: { lat: 18.0072, lng: 79.5702 }, // Hanamkonda Depot
+    heading: 180,
+    speedKmH: 32,
+    batteryOrFuelPercent: 91,
     occupancy: 'Low',
-    occupancyPercent: 32,
-    totalDistanceTodayKm: 195.4,
+    occupancyPercent: 35,
+    totalDistanceTodayKm: 124.0,
     lastUpdated: 'Just now',
     currentStopIndex: 1,
+    isSimulating: true,
+    delayMinutes: 0,
+    airConditioned: false,
+    wifiEnabled: false
+  },
+  {
+    id: 'veh-305A',
+    regNumber: 'TG-02-Z-7840',
+    model: 'Tata Starbus 2x2 Deluxe Express',
+    mode: 'Deluxe',
+    depot: 'Karimnagar Depot',
+    assignedRouteId: 'route-305',
+    assignedDriverId: 'drv-405',
+    assignedDriverName: 'S. Balaraju',
+    status: 'In Service',
+    currentLocation: { lat: 18.1500, lng: 79.4800 }, // between Hasanparthy & Husnabad
+    heading: 325,
+    speedKmH: 58,
+    batteryOrFuelPercent: 78,
+    occupancy: 'Moderate',
+    occupancyPercent: 55,
+    totalDistanceTodayKm: 215.4,
+    lastUpdated: 'Just now',
+    currentStopIndex: 2,
+    isSimulating: true,
+    delayMinutes: 3,
+    airConditioned: false,
+    wifiEnabled: true
+  },
+  {
+    id: 'veh-408A',
+    regNumber: 'TG-09-Z-4521',
+    model: 'Volvo B11R Multi-Axle Garuda Plus AC',
+    mode: 'Super Luxury',
+    depot: 'Ranigunj-1 Depot, Hyderabad',
+    assignedRouteId: 'route-408',
+    assignedDriverId: 'drv-502',
+    assignedDriverName: 'M. Srinivas Rao',
+    status: 'In Service',
+    currentLocation: { lat: 17.7245, lng: 79.1780 }, // Jangaon Station
+    heading: 240,
+    speedKmH: 72,
+    batteryOrFuelPercent: 84,
+    occupancy: 'Crowded',
+    occupancyPercent: 80,
+    totalDistanceTodayKm: 285.0,
+    lastUpdated: 'Just now',
+    currentStopIndex: 3,
     isSimulating: true,
     delayMinutes: 0,
     airConditioned: true,
     wifiEnabled: true
   },
   {
-    id: 'veh-305A',
-    regNumber: 'BUS-3051',
-    model: 'Proterra Catalyst E2 Max',
-    mode: 'Bus',
-    assignedRouteId: 'route-305',
-    assignedDriverId: 'drv-405',
-    assignedDriverName: 'Aiden Brooks',
+    id: 'veh-502A',
+    regNumber: 'TG-03-EV-0105',
+    model: 'Olectra Greentech K9 Pure Electric AC Bus',
+    mode: 'Electric EV',
+    depot: 'Warangal Green EV Depot',
+    assignedRouteId: 'route-502',
+    assignedDriverId: 'drv-601',
+    assignedDriverName: 'T. Rajender',
     status: 'In Service',
-    currentLocation: { lat: 37.7680, lng: -122.4490 },
-    heading: 135,
-    speedKmH: 31,
-    batteryOrFuelPercent: 65,
-    occupancy: 'Moderate',
-    occupancyPercent: 62,
-    totalDistanceTodayKm: 118.2,
-    lastUpdated: 'Just now',
-    currentStopIndex: 2,
-    isSimulating: true,
-    delayMinutes: 3,
-    airConditioned: true,
-    wifiEnabled: true
-  },
-  {
-    id: 'veh-408A',
-    regNumber: 'EXP-4081',
-    model: 'Mercedes-Benz Citaro Airport Coach',
-    mode: 'Express Shuttle',
-    assignedRouteId: 'route-408',
-    assignedDriverId: 'drv-502',
-    assignedDriverName: 'Maya Patel',
-    status: 'In Service',
-    currentLocation: { lat: 37.7766, lng: -122.3949 },
-    heading: 180,
-    speedKmH: 68,
-    batteryOrFuelPercent: 81,
+    currentLocation: { lat: 17.8200, lng: 79.7500 }, // near Wardhannapet
+    heading: 145,
+    speedKmH: 48,
+    batteryOrFuelPercent: 82,
     occupancy: 'Low',
-    occupancyPercent: 24,
-    totalDistanceTodayKm: 245.0,
+    occupancyPercent: 28,
+    totalDistanceTodayKm: 98.2,
     lastUpdated: 'Just now',
-    currentStopIndex: 3,
+    currentStopIndex: 1,
     isSimulating: true,
     delayMinutes: 0,
     airConditioned: true,
@@ -400,42 +556,44 @@ export const INITIAL_VEHICLES: TransitVehicle[] = [
   },
   {
     id: 'veh-101C',
-    regNumber: 'BUS-1013',
-    model: 'Volvo 7900 Hybrid City',
-    mode: 'Bus',
+    regNumber: 'TG-03-Z-8814',
+    model: 'Ashok Leyland Super Luxury Coach',
+    mode: 'Super Luxury',
+    depot: 'Warangal Depot-1',
     assignedRouteId: 'route-101',
     assignedDriverId: null,
     status: 'Idle / Depot',
-    currentLocation: { lat: 37.7790, lng: -122.4190 },
+    currentLocation: { lat: 17.9689, lng: 79.6012 }, // at Warangal Depot
     heading: 0,
     speedKmH: 0,
     batteryOrFuelPercent: 99,
     occupancy: 'Empty',
     occupancyPercent: 0,
-    totalDistanceTodayKm: 42.0,
+    totalDistanceTodayKm: 32.0,
     lastUpdated: '25 mins ago',
     currentStopIndex: 0,
     isSimulating: false,
     delayMinutes: 0,
-    airConditioned: true,
-    wifiEnabled: true
+    airConditioned: false,
+    wifiEnabled: false
   },
   {
     id: 'veh-204B',
-    regNumber: 'TRM-2042',
-    model: 'Bombardier Flexity Swift Tram',
-    mode: 'Tram',
+    regNumber: 'TG-03-Z-9912',
+    model: 'Tata Ultra Transit Bus',
+    mode: 'City Ordinary',
+    depot: 'Warangal Regional Workshop',
     assignedRouteId: 'route-204',
     assignedDriverId: null,
     status: 'Maintenance',
-    currentLocation: { lat: 37.7550, lng: -122.4150 },
+    currentLocation: { lat: 18.0010, lng: 79.5790 },
     heading: 0,
     speedKmH: 0,
-    batteryOrFuelPercent: 45,
+    batteryOrFuelPercent: 40,
     occupancy: 'Empty',
     occupancyPercent: 0,
     totalDistanceTodayKm: 0,
-    lastUpdated: '2 hours ago',
+    lastUpdated: '3 hours ago',
     currentStopIndex: 0,
     isSimulating: false,
     delayMinutes: 0,
@@ -449,191 +607,197 @@ export const INITIAL_SCHEDULE_REPORTS: RouteScheduleItem[] = [
     id: 'sch-101-01',
     routeId: 'route-101',
     routeCode: '101',
-    routeName: 'Blue Metro Express',
-    tripId: 'TRIP-101-0800',
-    vehicleId: 'BUS-1011',
+    routeName: 'Kazipet - Hanamkonda - Warangal Tri-City Express',
+    tripId: 'TRP-101-0630',
+    vehicleId: 'TG-03-Z-1089',
     driverId: 'usr-driver-1',
-    driverName: 'David Rodriguez',
-    departureTime: '08:00 AM',
-    arrivalTime: '08:28 AM',
-    actualDepartureTime: '08:02 AM',
-    actualArrivalTime: '08:31 AM',
+    driverName: 'Ramesh Goud',
+    departureTime: '06:30 AM',
+    arrivalTime: '07:10 AM',
+    actualDepartureTime: '06:30 AM',
+    actualArrivalTime: '07:11 AM',
     dayType: 'Weekday',
-    frequency: 'Every 10 mins',
-    status: 'Delayed',
-    varianceMinutes: 3,
-    onTimeRate: 94.2
+    frequency: 'Every 8 mins',
+    status: 'On Time',
+    varianceMinutes: 1,
+    onTimeRate: 97.5,
+    platformNo: 'Platform 3 (KZP)'
   },
   {
     id: 'sch-101-02',
     routeId: 'route-101',
     routeCode: '101',
-    routeName: 'Blue Metro Express',
-    tripId: 'TRIP-101-0810',
-    vehicleId: 'BUS-1012',
-    driverId: 'drv-204',
-    driverName: 'Carlos Gomez',
-    departureTime: '08:10 AM',
-    arrivalTime: '08:38 AM',
-    actualDepartureTime: '08:11 AM',
-    actualArrivalTime: '08:45 AM',
+    routeName: 'Kazipet - Hanamkonda - Warangal Tri-City Express',
+    tripId: 'TRP-101-0715',
+    vehicleId: 'TG-03-Z-2415',
+    driverId: 'drv-202',
+    driverName: 'K. Venkateswarlu',
+    departureTime: '07:15 AM',
+    arrivalTime: '07:55 AM',
+    actualDepartureTime: '07:18 AM',
+    actualArrivalTime: '08:01 AM',
     dayType: 'Weekday',
-    frequency: 'Every 10 mins',
+    frequency: 'Every 8 mins',
     status: 'Delayed',
-    varianceMinutes: 7,
-    onTimeRate: 88.5
+    varianceMinutes: 6,
+    onTimeRate: 89.2,
+    platformNo: 'Platform 3 (KZP)'
   },
   {
     id: 'sch-204-01',
     routeId: 'route-204',
     routeCode: '204',
-    routeName: 'Emerald Crosstown Connector',
-    tripId: 'TRIP-204-0815',
-    vehicleId: 'TRM-2041',
+    routeName: 'Kakatiya Heritage Circular (KU Campus ⇄ Warangal Fort)',
+    tripId: 'TRP-204-0730',
+    vehicleId: 'TG-03-Z-3320',
     driverId: 'drv-301',
-    driverName: 'Jessica Miller',
-    departureTime: '08:15 AM',
-    arrivalTime: '08:47 AM',
-    actualDepartureTime: '08:15 AM',
-    actualArrivalTime: '08:46 AM',
+    driverName: 'Mohammad Khaja',
+    departureTime: '07:30 AM',
+    arrivalTime: '08:18 AM',
+    actualDepartureTime: '07:30 AM',
+    actualArrivalTime: '08:18 AM',
     dayType: 'Weekday',
     frequency: 'Every 12 mins',
-    status: 'On Time',
-    varianceMinutes: -1,
-    onTimeRate: 98.7
+    status: 'Completed',
+    varianceMinutes: 0,
+    onTimeRate: 98.4,
+    platformNo: 'Platform 1 (KU)'
   },
   {
     id: 'sch-305-01',
     routeId: 'route-305',
     routeCode: '305',
-    routeName: 'Sunset Rapid Shoreline',
-    tripId: 'TRIP-305-0830',
-    vehicleId: 'BUS-3051',
+    routeName: 'Warangal - Karimnagar Deluxe Express',
+    tripId: 'TRP-305-0745',
+    vehicleId: 'TG-02-Z-7840',
     driverId: 'drv-405',
-    driverName: 'Aiden Brooks',
-    departureTime: '08:30 AM',
-    arrivalTime: '09:06 AM',
-    actualDepartureTime: '08:32 AM',
-    actualArrivalTime: '09:09 AM',
+    driverName: 'S. Balaraju',
+    departureTime: '07:45 AM',
+    arrivalTime: '09:20 AM',
+    actualDepartureTime: '07:45 AM',
+    actualArrivalTime: '09:23 AM',
     dayType: 'Weekday',
-    frequency: 'Every 15 mins',
-    status: 'Delayed',
+    frequency: 'Every 20 mins',
+    status: 'On Time',
     varianceMinutes: 3,
-    onTimeRate: 91.0
+    onTimeRate: 94.8,
+    platformNo: 'Platform 6 (HNK)'
   },
   {
     id: 'sch-408-01',
     routeId: 'route-408',
     routeCode: '408',
-    routeName: 'Airport Metro Direct',
-    tripId: 'TRIP-408-0800',
-    vehicleId: 'EXP-4081',
+    routeName: 'Warangal - Hyderabad Garuda Super Luxury',
+    tripId: 'TRP-408-0600',
+    vehicleId: 'TG-09-Z-4521',
     driverId: 'drv-502',
-    driverName: 'Maya Patel',
-    departureTime: '08:00 AM',
-    arrivalTime: '08:24 AM',
-    actualDepartureTime: '08:00 AM',
-    actualArrivalTime: '08:23 AM',
+    driverName: 'M. Srinivas Rao',
+    departureTime: '06:00 AM',
+    arrivalTime: '08:45 AM',
+    actualDepartureTime: '06:00 AM',
+    actualArrivalTime: '08:44 AM',
     dayType: 'Weekday',
     frequency: 'Every 15 mins',
     status: 'On Time',
     varianceMinutes: -1,
-    onTimeRate: 99.1
+    onTimeRate: 99.2,
+    platformNo: 'Platform 2 (WGL CBS)'
   },
   {
-    id: 'sch-101-03',
-    routeId: 'route-101',
-    routeCode: '101',
-    routeName: 'Blue Metro Express',
-    tripId: 'TRIP-101-0820',
-    vehicleId: 'BUS-1013',
+    id: 'sch-502-01',
+    routeId: 'route-502',
+    routeCode: '502',
+    routeName: 'Warangal - Khammam Green EV Express',
+    tripId: 'TRP-502-0800',
+    vehicleId: 'TG-03-EV-0105',
     driverId: 'drv-601',
-    driverName: 'Liam Chen',
-    departureTime: '08:20 AM',
-    arrivalTime: '08:48 AM',
-    actualDepartureTime: '08:20 AM',
-    actualArrivalTime: '08:48 AM',
+    driverName: 'T. Rajender',
+    departureTime: '08:00 AM',
+    arrivalTime: '10:15 AM',
+    actualDepartureTime: '08:02 AM',
+    actualArrivalTime: '10:16 AM',
     dayType: 'Weekday',
-    frequency: 'Every 10 mins',
-    status: 'Completed',
-    varianceMinutes: 0,
-    onTimeRate: 97.4
+    frequency: 'Every 30 mins',
+    status: 'On Time',
+    varianceMinutes: 1,
+    onTimeRate: 96.0,
+    platformNo: 'Platform 4 (WGL CBS)'
   }
 ];
 
 export const INITIAL_FEEDBACK: PassengerFeedback[] = [
   {
     id: 'fb-001',
-    passengerName: 'Elena Rostova',
+    passengerName: 'Ananya Reddy',
     isAnonymous: false,
     routeId: 'route-101',
     routeCode: '101',
-    vehicleId: 'BUS-1011',
+    vehicleId: 'TG-03-Z-1089',
     rating: 5,
-    category: 'Driving Safety',
-    comment: 'Driver David was very polite and smooth around sharp downtown turns. Clean electric bus with working AC!',
-    timestamp: 'Today at 08:35 AM',
+    category: 'Punctuality',
+    comment: 'Punctual service between Kazipet Railway Station and Kakatiya University / Hanamkonda. Digital Telugu and English LED boards inside the bus were very clear.',
+    timestamp: 'Today at 08:35 AM IST',
     sentiment: 'Positive',
     status: 'Reviewed',
-    adminResponse: 'Thank you Elena! We have shared your compliments with Driver David and the team.'
+    adminResponse: 'Thank you Ananya. TGSRTC Warangal Depot-1 prioritizes student and daily commuter punctuality along the tri-city corridor.'
   },
   {
     id: 'fb-002',
-    passengerName: 'Anonymous Commuter',
-    isAnonymous: true,
+    passengerName: 'B. Ravi Kumar (Subedari)',
+    isAnonymous: false,
     routeId: 'route-101',
     routeCode: '101',
-    vehicleId: 'BUS-1012',
+    vehicleId: 'TG-03-Z-2415',
     rating: 3,
-    category: 'Punctuality',
-    comment: 'Bus arrived 7 minutes later than posted on the digital sign at Ferry Building. Very crowded by 8:30.',
-    timestamp: 'Today at 08:42 AM',
+    category: 'Crowding / Comfort',
+    comment: 'Heavy crowd during morning rush hour near MGM Hospital. Conductor was polite and accepted digital UPI payments smoothly.',
+    timestamp: 'Today at 08:45 AM IST',
     sentiment: 'Neutral',
     status: 'Pending',
-    adminResponse: 'Traffic delays at Market Street were active during your trip; dispatch is adding an extra morning booster bus.'
+    adminResponse: 'Additional booster bus scheduled from Kazipet to Warangal CBS starting 08:15 AM during peak hours.'
   },
   {
     id: 'fb-003',
-    passengerName: 'Brian K.',
+    passengerName: 'Mohammed Rafi (Local Resident)',
     isAnonymous: false,
     routeId: 'route-204',
     routeCode: '204',
-    vehicleId: 'TRM-2041',
+    vehicleId: 'TG-03-Z-3320',
     rating: 5,
-    category: 'Cleanliness',
-    comment: 'Spotless low-floor tram! Super easy boarding with stroller, digital screens gave exact countdowns.',
-    timestamp: 'Yesterday at 05:15 PM',
+    category: 'Driving Safety',
+    comment: 'Driver Mohammad Khaja navigated the narrow chowrasta roads near Warangal Fort very carefully. Bus was clean and well maintained.',
+    timestamp: 'Yesterday at 05:20 PM IST',
     sentiment: 'Positive',
     status: 'Resolved'
   },
   {
     id: 'fb-004',
-    passengerName: 'Kavita Sundaram',
+    passengerName: 'Priya Sharma (Tech Professional)',
     isAnonymous: false,
     routeId: 'route-408',
     routeCode: '408',
-    vehicleId: 'EXP-4081',
+    vehicleId: 'TG-09-Z-4521',
     rating: 5,
-    category: 'App Experience',
-    comment: 'Airport direct GPS tracking was 100% accurate. Reached terminal 3 on schedule. Luggage racks are great.',
-    timestamp: 'Yesterday at 03:20 PM',
+    category: 'Cleanliness',
+    comment: 'Garuda Super Luxury AC bus from Warangal to MGBS Hyderabad was spotless. Reached Uppal Metro Interchange ahead of schedule. Very comfortable 2x2 pushback seats.',
+    timestamp: 'Yesterday at 04:10 PM IST',
     sentiment: 'Positive',
     status: 'Resolved'
   },
   {
     id: 'fb-005',
-    passengerName: 'Anonymous Rider',
+    passengerName: 'Commuter from Hanamkonda',
     isAnonymous: true,
     routeId: 'route-305',
     routeCode: '305',
-    vehicleId: 'BUS-3051',
-    rating: 2,
-    category: 'Crowding / Comfort',
-    comment: 'Air conditioning seemed low on bus 3051 during morning rush. Stuffy near rear seats.',
-    timestamp: '2 days ago',
-    sentiment: 'Negative',
+    vehicleId: 'TG-02-Z-7840',
+    rating: 4,
+    category: 'App Experience',
+    comment: 'Live GPS location matched exactly when waiting at Hasanparthy bus shelter. Arrival countdown was reliable.',
+    timestamp: '02-11-2026',
+    sentiment: 'Positive',
     status: 'Reviewed',
-    adminResponse: 'Maintenance depot inspected HVAC system and replaced cabin filter on BUS-3051.'
+    adminResponse: 'GPS transponders have been upgraded on all Deluxe and Super Luxury units in Warangal & Karimnagar divisions.'
   }
 ];
 
@@ -642,90 +806,90 @@ export const INITIAL_SERVICE_DELAYS: ServiceDelay[] = [
     id: 'dly-101',
     routeId: 'route-101',
     routeCode: '101',
-    routeName: 'Blue Metro Express',
-    vehicleId: 'BUS-1012',
-    delayMinutes: 7,
+    routeName: 'Kazipet - Hanamkonda - Warangal Tri-City Express',
+    vehicleId: 'TG-03-Z-2415',
+    delayMinutes: 6,
     cause: 'Traffic Congestion',
-    affectedStops: ['ST-EM4', 'ST-FW5'],
+    affectedStops: ['MGM-HSP', 'WGL-CBS'],
     reportedByRole: 'Driver',
-    reportedByName: 'Carlos Gomez',
-    reportedAt: '08:25 AM',
-    estimatedResolutionTime: '09:15 AM',
+    reportedByName: 'K. Venkateswarlu',
+    reportedAt: '08:10 AM IST',
+    estimatedResolutionTime: '08:45 AM IST',
     status: 'Active',
-    actionTaken: 'Transit Priority Signal lane activated; auxiliary bus BUS-1013 staged at Civic Center.',
+    actionTaken: 'Traffic police assisted clearance at MGM Hospital chowrasta; auxiliary bus staged at Subedari.',
     severity: 'Medium'
   },
   {
-    id: 'dly-305',
-    routeId: 'route-305',
-    routeCode: '305',
-    routeName: 'Sunset Rapid Shoreline',
-    vehicleId: 'BUS-3051',
-    delayMinutes: 3,
+    id: 'dly-408',
+    routeId: 'route-408',
+    routeCode: '408',
+    routeName: 'Warangal - Hyderabad Garuda Super Luxury',
+    vehicleId: 'TG-09-Z-4521',
+    delayMinutes: 10,
     cause: 'Road Construction',
-    affectedStops: ['ST-CS10'],
+    affectedStops: ['JGN-RTC', 'ALR-XRD'],
     reportedByRole: 'Transport Operator',
-    reportedByName: 'Marcus Vance',
-    reportedAt: '07:45 AM',
-    estimatedResolutionTime: '11:00 AM',
+    reportedByName: 'S. Rajalingam (RM)',
+    reportedAt: '07:30 AM IST',
+    estimatedResolutionTime: '09:30 AM IST',
     status: 'Active',
-    actionTaken: 'Minor detour via 18th Avenue bypass implemented.',
-    severity: 'Low'
+    actionTaken: 'NH-163 flyover construction detour via Jangaon Bypass road implemented.',
+    severity: 'Medium'
   },
   {
-    id: 'dly-204-hist',
-    routeId: 'route-204',
-    routeCode: '204',
-    routeName: 'Emerald Crosstown Connector',
-    vehicleId: 'TRM-2042',
-    delayMinutes: 18,
-    cause: 'Mechanical Issue',
-    affectedStops: ['ST-MS8', 'ST-CV1'],
+    id: 'dly-305-hist',
+    routeId: 'route-305',
+    routeCode: '305',
+    routeName: 'Warangal - Karimnagar Deluxe Express',
+    vehicleId: 'TG-02-Z-7840',
+    delayMinutes: 15,
+    cause: 'Railway Gate Closure',
+    affectedStops: ['HSP-JNC'],
     reportedByRole: 'Transport Operator',
-    reportedByName: 'Marcus Vance',
-    reportedAt: 'Yesterday 06:10 PM',
-    estimatedResolutionTime: 'Yesterday 06:55 PM',
+    reportedByName: 'S. Rajalingam (RM)',
+    reportedAt: 'Yesterday 09:15 AM IST',
+    estimatedResolutionTime: 'Yesterday 09:40 AM IST',
     status: 'Resolved',
-    actionTaken: 'Tram swapped with reserve train TRM-2041. Passengers transferred with 0 fare penalty.',
-    severity: 'High'
+    actionTaken: 'Goods train shunting cleared at Hasanparthy LC gate; normal schedule restored.',
+    severity: 'Low'
   }
 ];
 
 export const INITIAL_AUDIT_LOGS: SystemAuditLog[] = [
   {
     id: 'log-101',
-    timestamp: 'Today at 08:26 AM',
-    actor: 'Carlos Gomez',
+    timestamp: 'Today at 08:12 AM IST',
+    actor: 'K. Venkateswarlu',
     role: 'Driver',
-    action: 'Reported Delay',
-    details: 'Logged 7 min delay on Route 101 due to Market St heavy congestion.',
-    ipAddress: '192.168.4.11'
+    action: 'Logged Field Delay',
+    details: 'Reported 6 min delay on Route 101 due to vegetable market congestion near MGM Chowrasta.',
+    ipAddress: '10.14.2.89'
   },
   {
     id: 'log-102',
-    timestamp: 'Today at 08:12 AM',
-    actor: 'Marcus Vance',
+    timestamp: 'Today at 07:15 AM IST',
+    actor: 'S. Rajalingam',
     role: 'Transport Operator',
     action: 'Vehicle Dispatched',
-    details: 'Dispatched BUS-1011 on Route 101 assigned to Driver David Rodriguez.',
-    ipAddress: '10.0.1.45'
+    details: 'Dispatched TG-03-Z-1089 from Warangal Depot-1 on Tri-City Corridor assigned to Driver Ramesh Goud.',
+    ipAddress: '10.14.1.45'
   },
   {
     id: 'log-103',
-    timestamp: 'Today at 07:30 AM',
-    actor: 'Sarah Jenkins',
+    timestamp: 'Today at 06:00 AM IST',
+    actor: 'Sri. K. V. Ramanathan, IPS',
     role: 'Admin',
-    action: 'Published Timetable Update',
-    details: 'Approved and published Summer Q3 Master Schedule for all 4 routes.',
-    ipAddress: '10.0.1.10'
+    action: 'Published Master Timetable',
+    details: 'Approved Winter Schedule & EV Fleet deployment for Warangal Tri-City & Hyderabad Corridors.',
+    ipAddress: '10.1.1.10'
   },
   {
     id: 'log-104',
-    timestamp: 'Today at 07:00 AM',
-    actor: 'Marcus Vance',
+    timestamp: '03-11-2026 at 09:30 PM IST',
+    actor: 'S. Rajalingam',
     role: 'Transport Operator',
-    action: 'Fleet Telemetry Initialized',
-    details: 'GPS tracking simulation synchronized across 7 fleet units.',
-    ipAddress: '10.0.1.45'
+    action: 'Fleet Maintenance Updated',
+    details: 'Transit unit TG-03-Z-9912 checked in at Warangal Regional Workshop for scheduled brake overhaul.',
+    ipAddress: '10.14.1.45'
   }
 ];

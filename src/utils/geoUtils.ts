@@ -39,3 +39,4 @@ export function interpolateGeoPoint(p1: GeoPoint, p2: GeoPoint, fraction: number
 export function formatCoord(val: number): string {
   return val.toFixed(5);
 }
+

@@ -8,27 +8,41 @@ export default {
     extend: {
       colors: {
         transit: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#b9dffe',
-          300: '#7cc4fd',
-          400: '#36a5fa',
-          500: '#0c87eb',
-          600: '#006bc9',
-          700: '#0155a3',
-          800: '#064886',
-          900: '#0b3d6f',
-          950: '#07264a',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
+        },
+        tgsrtc: {
+          green: '#0d6e52',
+          darkgreen: '#094f3b',
+          lightgreen: '#10b981',
+          accent: '#eab308'
         },
         navy: {
-          850: '#111b2d',
-          900: '#0c1524',
-          950: '#070d18'
+          700: '#1e3357',
+          800: '#13233f',
+          850: '#0e1b33',
+          900: '#091326',
+          950: '#050b17'
         }
       },
-      animation: {
-        'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+      },
+      boxShadow: {
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'panel': '0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08)',
+        'elevated': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        'hud': '0 0 20px rgba(13, 110, 82, 0.15)'
       }
     },
   },

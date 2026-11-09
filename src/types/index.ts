@@ -4,10 +4,13 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  username?: string;
+  password?: string;
   role: UserRole;
   avatar: string;
   badgeNumber?: string;
   operatorCompany?: string;
+  depot?: string;
 }
 
 export interface GeoPoint {
@@ -19,13 +22,21 @@ export interface TransitStop {
   id: string;
   code: string;
   name: string;
+  teluguName?: string;
   location: GeoPoint;
   zone: string;
-  amenities: ('Shelter' | 'Digital Display' | 'Wheelchair Access' | 'Bicycle Rack' | 'Ticket Kiosk')[];
+  amenities: ('Shelter' | 'Digital Display' | 'Wheelchair Access' | 'Ticket Kiosk' | 'Drinking Water' | 'Restroom' | 'Bicycle Rack')[];
   routesServed: string[]; // Route IDs
 }
 
-export type TransportMode = 'Bus' | 'Metro Rail' | 'Tram' | 'Express Shuttle';
+export type TransportMode =
+  | 'City Ordinary'
+  | 'Metro Express'
+  | 'Deluxe'
+  | 'Super Luxury'
+  | 'Garuda Plus AC'
+  | 'Electric EV'
+  | 'Bus';
 
 export interface RouteStopSchedule {
   stopId: string;
@@ -37,6 +48,7 @@ export interface TransitRoute {
   id: string;
   code: string;
   name: string;
+  teluguName?: string;
   mode: TransportMode;
   color: string;
   description: string;
@@ -45,9 +57,11 @@ export interface TransitRoute {
   isPublished: boolean;
   stops: TransitStop[];
   waypoints: GeoPoint[];
-  fare: number;
+  fare: number; // in INR ₹
   totalDistanceKm: number;
   averageDurationMinutes: number;
+  depotOrigin?: string;
+  depotDestination?: string;
 }
 
 export type VehicleStatus = 'In Service' | 'Idle / Depot' | 'Maintenance' | 'Delayed' | 'Off Duty';
@@ -55,9 +69,10 @@ export type OccupancyLevel = 'Empty' | 'Low' | 'Moderate' | 'Crowded' | 'Full';
 
 export interface TransitVehicle {
   id: string;
-  regNumber: string;
+  regNumber: string; // e.g. TG-03-Z-1089
   model: string;
   mode: TransportMode;
+  depot: string; // e.g. Warangal Depot-1, Hanamkonda Depot
   assignedRouteId: string | null;
   assignedDriverId: string | null;
   assignedDriverName?: string;
@@ -86,15 +101,16 @@ export interface RouteScheduleItem {
   vehicleId: string;
   driverId: string;
   driverName: string;
-  departureTime: string; // "08:00 AM"
-  arrivalTime: string;   // "08:50 AM"
+  departureTime: string; // "06:30 AM"
+  arrivalTime: string;   // "07:15 AM"
   actualDepartureTime?: string;
   actualArrivalTime?: string;
-  dayType: 'Weekday' | 'Weekend' | 'Holiday';
+  dayType: 'Weekday' | 'Weekend' | 'Special / Festival';
   frequency: string;
   status: 'On Time' | 'Delayed' | 'Completed' | 'Cancelled';
   varianceMinutes: number;
-  onTimeRate: number; // e.g. 96%
+  onTimeRate: number; // e.g. 96.2%
+  platformNo?: string;
 }
 
 export interface PassengerFeedback {
@@ -113,7 +129,13 @@ export interface PassengerFeedback {
   adminResponse?: string;
 }
 
-export type DelayCause = 'Traffic Congestion' | 'Adverse Weather' | 'Mechanical Issue' | 'Road Construction' | 'Accident Clearance' | 'Signal Failure';
+export type DelayCause =
+  | 'Traffic Congestion'
+  | 'Road Construction'
+  | 'Mechanical Issue'
+  | 'Weather / Heavy Rain'
+  | 'Railway Gate Closure'
+  | 'Festival / Procession Detour';
 
 export interface ServiceDelay {
   id: string;
@@ -131,18 +153,6 @@ export interface ServiceDelay {
   status: 'Active' | 'Investigating' | 'Resolved';
   actionTaken: string;
   severity: 'Low' | 'Medium' | 'High' | 'Critical';
-}
-
-export interface DriverShift {
-  driverId: string;
-  driverName: string;
-  assignedVehicleId: string;
-  assignedRouteId: string;
-  shiftStart: string;
-  shiftEnd: string;
-  tripStatus: 'Not Started' | 'In Progress' | 'Break' | 'Completed';
-  currentStopId?: string;
-  nextStopId?: string;
 }
 
 export interface SystemAuditLog {

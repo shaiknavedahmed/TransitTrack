@@ -35,3 +35,4 @@ jobs:
           context: .
           push: false
           tags: metro-transit-portal:latest
+
