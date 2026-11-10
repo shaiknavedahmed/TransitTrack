@@ -1,19 +1,17 @@
-version: '3.8'
-
 services:
-  metro-transit-portal:
+  tgsrtc-portal:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: metro_transit_app
+    container_name: tgsrtc_portal_app
     ports:
       - "8080:80"
     restart: unless-stopped
     environment:
       - NODE_ENV=production
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
       interval: 30s
       timeout: 5s
       retries: 3
-
+      start_period: 10s

@@ -1,4 +1,4 @@
-# Multi-stage Docker build for MetroTransit Portal
+# Multi-stage Docker build for TGSRTC Portal
 
 # Stage 1: Build the React Application
 FROM node:20-alpine AS builder

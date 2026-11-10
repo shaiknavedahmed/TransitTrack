@@ -1,4 +1,8 @@
-export function exportToCSV(filename: string, headers: string[], rows: (string | number)[][]) {
+export function exportToCSV(
+  filename: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+) {
   const csvContent = [
     headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
     ...rows.map(row =>
@@ -17,6 +21,16 @@ export function exportToCSV(filename: string, headers: string[], rows: (string |
   URL.revokeObjectURL(url);
 }
 
+/** HTML-escape a string to prevent XSS when interpolated into markup. */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function printSection(sectionId: string, title: string) {
   const section = document.getElementById(sectionId);
   if (!section) return;
@@ -24,11 +38,13 @@ export function printSection(sectionId: string, title: string) {
   const printWindow = window.open('', '_blank');
   if (!printWindow) return;
 
+  const safeTitle = escapeHtml(title);
+
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${title} - MetroTransit Official Report</title>
+        <title>${safeTitle} - TGSRTC Official Report</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1e293b; }
           h1 { color: #006bc9; border-bottom: 2px solid #006bc9; padding-bottom: 8px; margin-bottom: 4px; }
@@ -48,10 +64,10 @@ export function printSection(sectionId: string, title: string) {
         </style>
       </head>
       <body>
-        <h1>MetroTransit Public Transport Portal</h1>
-        <div class="header-meta">Official Authority Report: ${title} | Generated on: ${new Date().toLocaleString()}</div>
+        <h1>TGSRTC Public Transport Portal</h1>
+        <div class="header-meta">Official Authority Report: ${safeTitle} | Generated on: ${new Date().toLocaleString()}</div>
         ${section.innerHTML}
-        <div class="footer">Confidential &bull; Metro Transit Authority Regulatory Report &bull; Page 1 of 1</div>
+        <div class="footer">Confidential &bull; TGSRTC Regulatory Report &bull; Page 1 of 1</div>
         <script>
           window.onload = function() { window.print(); }
         </script>
@@ -60,4 +76,3 @@ export function printSection(sectionId: string, title: string) {
   `);
   printWindow.document.close();
 }
-
